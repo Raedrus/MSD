@@ -1,0 +1,11 @@
+path: \Users\dingy\OneDrive\Desktop\MSD_Vision\data\Smart Dustbin v1  # dataset root dir
+train: images/train  # train images (relative to 'path')
+val: images/val  # val images (relative to 'path')
+
+nc: 3
+
+# Classes
+names:
+  0: Battery
+  1: E_Devices
+  2: Alu_Can
