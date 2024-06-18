@@ -15,9 +15,6 @@ import sys  # For testing system quits
 import os  # For testing system quits
 import psutil  # For testing system quits
 
-# Function file import
-from WasteSorting import sortingcycle
-from Serial_Pi_ESP32 import esp32_comms
 
 # Configure the serial connection
 ser = serial.Serial(
@@ -48,7 +45,7 @@ def send_position(position):
 # are reasonable, the sensor is working. Else, check GPIO assignment,
 # check the wiring, ensure 5V is supplied to Vcc pin
 
-def ESPcom():
+def esp_com(command):
     response = send_command(command)
     print("Response from ESP32:", response)
 
@@ -57,25 +54,18 @@ def ESPcom():
             response == "Initiating Green LED Test..." or \
             response == "Initiating Red LED Test...":
         # Wait for completion message
-        while True:
-            response = ser.readline().decode('utf-8').strip()
-            if response == "Check Done":
-                print("Test completed.")
-                break
-            elif response:
-                print("ESP32:", response)
+
 
     elif response == "Initiating LID servo Test..." or \
             response == "Initiating GATE servo Test...":
 
         while True:
             try:
-                position = int(input("Enter position (0-100): ").strip())
+                position = int(input(" ").strip())
                 if 0 <= position <= 100:
                     response = send_position(position)
                     print("Response from ESP32:", response)
                     if "info_servo variable string is:" in response:
-                        print("Servo moving to position:", position)
                         break
                     else:
                         print("Failed to set position. Try again.")
@@ -127,7 +117,7 @@ def test_loop():
 
         elif command.upper() == "MAGNET" or "LED" or "RLED" or \
                 "GLED" or "LID" or "GATE":
-            ESPcom()
+            esp_com(command)
 
         elif command.upper() == "ULTRASONIC":
             UltraTest()
@@ -140,6 +130,9 @@ def test_loop():
 
         elif command.upper() == "GRIPPER":
             print("In progress")
+
+        elif command.upper() == "PLATFORM":
+
 
         else:
             print("Unknown response. Please try again.")
