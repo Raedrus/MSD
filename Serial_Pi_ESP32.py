@@ -9,16 +9,18 @@ def esp32_comms(ser, commandESP):
     ser.flush()
 
     # Print confirmation for sending
-    print(f"Sent: {string_value.decode('utf-8').strip()}")
+    print(f"Sent: {commandESP.decode('utf-8').strip()}")
+
+    # Allocate time for ESP32 to respond
+    time.sleep(0.01)
 
     # Read reply from ESP32
     receive = ser.readline().decode('utf-8').rstrip()
 
-    # Checking if ESP32 received the command
     timer_start = time.time()
     resend_counter = 0
+    # Checking if ESP32 received the command
     while not receive == 'OK':
-        time.sleep(0.005)
 
         # Setup a timeout scenario to attempt a command resend
         timer_end = time.time()
@@ -37,12 +39,12 @@ def esp32_comms(ser, commandESP):
 
     # Wait for ESP32 to complete task or continue immediately after sending command.
     match commandESP:
-        case "E":
+        case ["EMAGNET_ON" | "EMAGNET_OFF"]:
             time.sleep(1)
             return
-        case "L":
+        case ["LIGHTS_ON" | "LIGHTS_OFF" | "GREENLED_ON" | "GREENLED_OFF" | "REDLED_ON" | "REDLED_OFF"]:
             return
-        case ["S" | "M"]:
+        case ["LID_OPEN" | "LID_CLOSE" | "GATE_CLOSE" | "G_OPEN" | "G_CLOSE" | "S" | "M"]:
             receive = ser.readline().decode('utf-8').rstrip()
             while not receive == 'Done':
                 time.sleep(0.005)
