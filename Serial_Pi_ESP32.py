@@ -53,5 +53,3 @@ def esp32_comms(ser, commandESP):
             # Clear lingering serial inputs
             ser.reset_input_buffer()
             return
-
-
