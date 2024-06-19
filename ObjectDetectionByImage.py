@@ -4,7 +4,7 @@ import pandas as pd
 
 
 
-def GetMVData(frame):
+def get_mv_data(frame):
     #Function takes image input and outputs type_posi array for segregation section
     
     model = YOLO('best.pt')
@@ -80,7 +80,7 @@ def GetMVData(frame):
 
     return type_posi
 
-GetMVData()
+get_mv_data()
         
 
 
