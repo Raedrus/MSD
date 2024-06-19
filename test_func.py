@@ -107,7 +107,18 @@ def ButtonTest():
             print("Emergency Stop button is pressed")
             sleep(1)
 
-
+def plat_servoTest():
+        plat_servo = Servo(17) ## change based on desired pin
+        print('Platform servo is initiated')
+        plat_servo.min()
+        print('Platform at min angle')
+        sleep(1)
+        plat_servo.mid()
+        print('Platform at mid angle')
+        sleep(1)
+        plat_servo.max()
+        print('Platform at max angle')
+        sleep(1)
 def test_loop():
     while True:
         command = input("Enter test command or 'exit' to quit: ").strip()
@@ -132,7 +143,7 @@ def test_loop():
             print("In progress")
 
         elif command.upper() == "PLATFORM":
-
+            plat_servoTest()
 
         else:
             print("Unknown response. Please try again.")
