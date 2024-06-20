@@ -155,17 +155,24 @@ def ButtonTest():
 
 def plat_servoTest():
         print('Platform servo is initiated')
-        plat_servo.min()
-        print('Platform at min angle')
-        sleep(2)
-        plat_servo.mid()
-        print('Platform at mid angle')
-        sleep(2)
-        plat_servo.max()
-        print('Platform at max angle')
-        sleep(2)
-        print('Going back to min angle')
-        plat_servo.min()
+        angle = input("Enter minmidmax or angle degree (0-1): ").strip()
+
+        if angle.upper() == "MINMIDMAX":
+            plat_servo.min()
+            print('Platform at min angle')
+            sleep(2)
+            plat_servo.mid()
+            print('Platform at mid angle')
+            sleep(2)
+            plat_servo.max()
+            print('Platform at max angle')
+            sleep(2)
+            print('Going back to min angle')
+            plat_servo.min()
+        else:
+            print("Platform going to angle: " + angle)
+            plat_servo.value = angle
+            sleep(2)
     
 def test_loop():
     command = "Test"
