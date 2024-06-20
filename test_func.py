@@ -15,6 +15,47 @@ import sys  # For testing system quits
 import os  # For testing system quits
 import psutil  # For testing system quits
 
+# Function file import
+from WasteSorting import sortingcycle
+from Serial_Pi_ESP32 import esp32_comms
+
+current_system_pid = os.getpid()
+ThisSystem = psutil.Process(current_system_pid)
+
+# GPIO Assignments################################################################
+pin_green_led = 20
+pin_red_led = 21
+
+pin_ult_echo = 4
+pin_ult_trigger = 17
+
+pin_start = 6
+pin_Estop = 5
+
+pin_transistor_magnet = 16
+
+pin_plat_servo = 27
+
+# Setup #############################################
+green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
+red_led = LED(pin_red_led)  # Change number to assign GPIO number (BCM layout)
+
+
+plat_servo = Servo(pin_plat_servo) 
+
+# Ultrasonic Sensor Assignment, threshold dist settings in meters
+ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
+
+# Button Assignment
+# In the prototype, the buttons are set to pull down
+start_button = Button(pin_start, pull_up=True)
+Estop_button = Button(pin_Estop, pull_up=True)
+
+# Limit switch and IR sensor Assignment
+
+# Electromagnet Assignment
+magnet_cluster = DigitalOutputDevice(pin_transistor_magnet)
+
 
 # Configure the serial connection
 ser = serial.Serial(
@@ -108,17 +149,17 @@ def ButtonTest():
             sleep(1)
 
 def plat_servoTest():
-        plat_servo = Servo(17) ## change based on desired pin
         print('Platform servo is initiated')
         plat_servo.min()
         print('Platform at min angle')
-        sleep(1)
+        sleep(2)
         plat_servo.mid()
         print('Platform at mid angle')
-        sleep(1)
+        sleep(2)
         plat_servo.max()
         print('Platform at max angle')
-        sleep(1)
+        sleep(2)
+    
 def test_loop():
     while True:
         command = input("Enter test command or 'exit' to quit: ").strip()
