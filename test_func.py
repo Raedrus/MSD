@@ -164,6 +164,8 @@ def plat_servoTest():
         plat_servo.max()
         print('Platform at max angle')
         sleep(2)
+        print('Going back to min angle')
+        plat_servo.min()
     
 def test_loop():
     command = "Test"
