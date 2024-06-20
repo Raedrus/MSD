@@ -40,8 +40,7 @@ pin_plat_servo = 27
 green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
 red_led = LED(pin_red_led)  # Change number to assign GPIO number (BCM layout)
 
-
-plat_servo = Servo(pin_plat_servo) 
+plat_servo = Servo(pin_plat_servo)
 
 # Ultrasonic Sensor Assignment, threshold dist settings in meters
 ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
@@ -55,7 +54,6 @@ Estop_button = Button(pin_Estop, pull_up=True)
 
 # Electromagnet Assignment
 magnet_cluster = DigitalOutputDevice(pin_transistor_magnet)
-
 
 # Configure the serial connection
 ser = serial.Serial(
@@ -94,8 +92,16 @@ def esp_com(command):
             response == "Initiating LED Strip Test..." or \
             response == "Initiating Green LED Test..." or \
             response == "Initiating Red LED Test...":
-        # Wait for completion message
-
+        
+    
+        while True:
+            response = ser.readline().decode('utf-8').strip()
+            if response == "Check Done":
+                print("Test completed.")
+                break
+            elif response:
+                print("ESP32:", response)
+    
 
     elif response == "Initiating LID servo Test..." or \
             response == "Initiating GATE servo Test...":
@@ -115,13 +121,13 @@ def esp_com(command):
             except ValueError:
                 print("Invalid input. Enter an integer between 0 and 100.")
 
-    while True:
-        response = ser.readline().decode('utf-8').strip()
-        if response == "Check Done":
-            print("Test completed.")
-            break
-        elif response:
-            print("ESP32:", response)
+        while True:
+            response = ser.readline().decode('utf-8').strip()
+            if response == "Check Done":
+                print("Test completed.")
+                break
+            elif response:
+                print("ESP32:", response)
 
 
 def UltraTest():
@@ -148,18 +154,20 @@ def ButtonTest():
             print("Emergency Stop button is pressed")
             sleep(1)
 
+
 def plat_servoTest():
-        print('Platform servo is initiated')
-        plat_servo.min()
-        print('Platform at min angle')
-        sleep(2)
-        plat_servo.mid()
-        print('Platform at mid angle')
-        sleep(2)
-        plat_servo.max()
-        print('Platform at max angle')
-        sleep(2)
-    
+    print('Platform servo is initiated')
+    plat_servo.min()
+    print('Platform at min angle')
+    sleep(2)
+    plat_servo.mid()
+    print('Platform at mid angle')
+    sleep(2)
+    plat_servo.max()
+    print('Platform at max angle')
+    sleep(2)
+
+
 def test_loop():
     while True:
         command = input("Enter test command or 'exit' to quit: ").strip()
