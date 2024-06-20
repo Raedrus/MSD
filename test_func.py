@@ -15,9 +15,6 @@ import sys  # For testing system quits
 import os  # For testing system quits
 import psutil  # For testing system quits
 
-# Function file import
-from WasteSorting import sortingcycle
-from Serial_Pi_ESP32 import esp32_comms
 
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
@@ -40,7 +37,8 @@ pin_plat_servo = 27
 green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
 red_led = LED(pin_red_led)  # Change number to assign GPIO number (BCM layout)
 
-plat_servo = Servo(pin_plat_servo)
+
+plat_servo = Servo(pin_plat_servo) 
 
 # Ultrasonic Sensor Assignment, threshold dist settings in meters
 ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
@@ -55,6 +53,7 @@ Estop_button = Button(pin_Estop, pull_up=True)
 # Electromagnet Assignment
 magnet_cluster = DigitalOutputDevice(pin_transistor_magnet)
 
+
 # Configure the serial connection
 ser = serial.Serial(
     port='/dev/ttyAMA0',  # Replace with your serial port
@@ -67,8 +66,9 @@ print("Serial with ESP32 OK\n")
 
 
 def send_command(command):
-    ser.write((command + '\n').encode())
+    ser.write((command + '\n').encode('utf-8'))
     time.sleep(0.1)
+    #ser.flush()
     response = ser.readline().decode('utf-8').strip()
     return response
 
@@ -76,7 +76,9 @@ def send_command(command):
 def send_position(position):
     ser.write((str(position) + '\n').encode())
     time.sleep(0.1)
+    #ser.flush()
     response = ser.readline().decode('utf-8').strip()
+    #ser.reset_input_buffer()
     return response
 
 
@@ -88,12 +90,9 @@ def esp_com(command):
     response = send_command(command)
     print("Response from ESP32:", response)
 
-    if response == "Initiating MAGNET Test..." or \
-            response == "Initiating LED Strip Test..." or \
-            response == "Initiating Green LED Test..." or \
-            response == "Initiating Red LED Test...":
-        
-    
+    if command in ["EMAGNET", "LED", "GLED", "RLED"]:
+        # Wait for completion message
+        print("Im in loop")
         while True:
             response = ser.readline().decode('utf-8').strip()
             if response == "Check Done":
@@ -101,25 +100,22 @@ def esp_com(command):
                 break
             elif response:
                 print("ESP32:", response)
-    
 
-    elif response == "Initiating LID servo Test..." or \
-            response == "Initiating GATE servo Test...":
-
+    elif command in ["LID", "GATE"]:
+        print("Im in loop")
         while True:
-            try:
-                position = int(input(" ").strip())
-                if 0 <= position <= 100:
-                    response = send_position(position)
-                    print("Response from ESP32:", response)
-                    if "info_servo variable string is:" in response:
-                        break
-                    else:
-                        print("Failed to set position. Try again.")
+            
+            position = int(input("Input Position: ").strip())
+            if 0 <= position <= 100:
+                response = send_position(position)
+                print("Response from ESP32:", response)
+                if "info_servo variable string is:" in response:
+                    break
                 else:
-                    print("Position out of range. Enter a value between 0 and 100.")
-            except ValueError:
-                print("Invalid input. Enter an integer between 0 and 100.")
+                    print("Failed to set position. Try again.")
+            else:
+                print("Position out of range. Enter a value between 0 and 100.")
+            
 
         while True:
             response = ser.readline().decode('utf-8').strip()
@@ -147,6 +143,7 @@ def UltraTest():
 # Physical button configuration may be pulled up or pulled down!
 def ButtonTest():
     while True:
+        print("button testing")
         if start_button.is_pressed:
             print("Start button is pressed")
             sleep(1)
@@ -154,49 +151,52 @@ def ButtonTest():
             print("Emergency Stop button is pressed")
             sleep(1)
 
-
 def plat_servoTest():
-    print('Platform servo is initiated')
-    plat_servo.min()
-    print('Platform at min angle')
-    sleep(2)
-    plat_servo.mid()
-    print('Platform at mid angle')
-    sleep(2)
-    plat_servo.max()
-    print('Platform at max angle')
-    sleep(2)
-
-
+        print('Platform servo is initiated')
+        plat_servo.min()
+        print('Platform at min angle')
+        sleep(2)
+        plat_servo.mid()
+        print('Platform at mid angle')
+        sleep(2)
+        plat_servo.max()
+        print('Platform at max angle')
+        sleep(2)
+    
 def test_loop():
+    command = "Test"
+    response = send_command(command)
+    print(response)
     while True:
         command = input("Enter test command or 'exit' to quit: ").strip()
+        command = command.upper()
         if command.lower() == 'exit':
             print("Exiting...")
             break
 
-        elif command.upper() == "MAGNET" or "LED" or "RLED" or \
-                "GLED" or "LID" or "GATE":
+        elif command in ["EMAGNET", "LED", "RLED", "GLED", "LID", "GATE"]:
             esp_com(command)
-
-        elif command.upper() == "ULTRASONIC":
+            
+        elif command == "ULTRASONIC":
             UltraTest()
 
-        elif command.upper() == "BUTTON":
+        elif command == "BUTTON":
             ButtonTest()
 
-        elif command.upper() == "XYZAXIS":
+        elif command == "XYZAXIS":
             print("In progress")
 
-        elif command.upper() == "GRIPPER":
+        elif command == "GRIPPER":
             print("In progress")
 
-        elif command.upper() == "PLATFORM":
+        elif command == "PLATFORM":
             plat_servoTest()
-
+            
+            
         else:
             print("Unknown response. Please try again.")
 
 
 if __name__ == "__main__":
     test_loop()
+    
