@@ -142,14 +142,16 @@ def UltraTest():
 # Button Test functions print a message when the button is pressed
 # Physical button configuration may be pulled up or pulled down!
 def ButtonTest():
+    print("Press either button...\n")
     while True:
-        print("button testing")
         if start_button.is_pressed:
             print("Start button is pressed")
             sleep(1)
+            break
         elif Estop_button.is_pressed:
             print("Emergency Stop button is pressed")
             sleep(1)
+            break
 
 def plat_servoTest():
         print('Platform servo is initiated')
