@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SPREADSHEET_ID = '1vLEIQH3S5VCM8HBSe9u4XTnN9Pf5i-HnmZ4PGrxzfBE'  # Replace with your actual spreadsheet ID
 
 # The name of the sheet where you want to append the data (e.g., "Sheet1")
-SHEET_NAME = 'Sheet1'
+SHEET_NAME = 'Database'
 
 # New values to append (example values)
 e_quant = 2
