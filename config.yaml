@@ -1,4 +1,4 @@
-path: \Users\dingy\OneDrive\Desktop\MSD_Vision\data\Smart Dustbin v1  # dataset root dir
+path: \Users\dingy\Desktop\Utar_Degree\Year_4_Sem_1\MSD2\MSD_Programs\data\Smart Dustbin v1  # dataset root dir
 train: images/train  # train images (relative to 'path')
 val: images/val  # val images (relative to 'path')
 

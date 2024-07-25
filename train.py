@@ -4,7 +4,7 @@ from ultralytics import YOLO
 
 
 def train_model():
-    model = YOLO('yolov8n.pt')  # Example, replace with your model initialization
+    model = YOLO('yolov8m.pt')  # Example, replace with your model initialization
     results = model.train(data="config.yaml", epochs=100)  # Train the model
     return results
 
