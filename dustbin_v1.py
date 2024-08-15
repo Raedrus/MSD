@@ -23,10 +23,6 @@ current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
 ################## GPIO Assignments################################################################
-#Indicator LEDs
-pin_green_led = 20
-pin_red_led = 21
-
 # Ultrasonic Sensor
 pin_ult_echo = 6
 pin_ult_trigger = 5
@@ -66,6 +62,7 @@ pin_Zdir = 4
 # Setup #############################################
 green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
 red_led = LED(pin_red_led)  # Change number to assign GPIO number (BCM layout)
+
 
 # Ultrasonic Sensor Assignment, threshold dist settings in meters
 ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
