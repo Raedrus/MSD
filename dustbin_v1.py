@@ -22,17 +22,46 @@ from Serial_Pi_ESP32 import esp32_comms
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
-# GPIO Assignments################################################################
+################## GPIO Assignments################################################################
+#Indicator LEDs
 pin_green_led = 20
 pin_red_led = 21
 
-pin_ult_echo = 4
-pin_ult_trigger = 17
+# Ultrasonic Sensor
+pin_ult_echo = 6
+pin_ult_trigger = 5
 
-pin_start = 6
-pin_Estop = 5
+#Start Stop
+pin_start = 17
+pin_Estop = 13
 
-pin_transistor_magnet = 16
+#Limit Switches
+pin_Xhome = 11
+pin_Yhome = 9
+pin_Zhome = 25
+pin_bin1presence = 8
+pin_bin2presence = 7
+pin_bin3presence = 12
+
+#Infrared Sensor
+pin_Platorigin = 22
+pin_bin = 10
+
+#Servos
+pin_platservo = 27
+
+#Stepper Motors
+pin_Xen = 16
+pin_Xstep = 20
+pin_Xdir = 21
+
+pin_Yen = 18
+pin_Ystep = 23
+pin_Ydir = 24
+
+pin_Zen = 2
+pin_Zstep = 3
+pin_Zdir = 4
 
 # Setup #############################################
 green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
