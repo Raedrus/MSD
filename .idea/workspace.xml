@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="6fcc53f6-7516-4819-950e-12de5ef34b3c" name="Changes" comment="Update Commit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dustbin_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/dustbin_v1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UntestedGripSort/ZAxis.py" beforeDir="false" afterPath="$PROJECT_DIR$/UntestedGripSort/ZAxis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +61,11 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\dingy\Desktop\Utar_Degree\Year_4_Sem_1\MSD2\MSD_Programs" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="MSD_Vision" />
@@ -224,7 +228,23 @@
       <option name="project" value="LOCAL" />
       <updated>1721896630091</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Update Commit">
+      <option name="closed" value="true" />
+      <created>1723711978740</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1723711978740</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Update Commit">
+      <option name="closed" value="true" />
+      <created>1723712081508</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1723712081508</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
