@@ -26,7 +26,7 @@ def home_XY():
 
     gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)
     gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
-    esp32_comms(ser, "open")
+    esp32_comms(ser, "G_OPEN")
 
 
 # The 4 bins (General waste, metal, electronics, batteries)
@@ -212,7 +212,7 @@ def finger_release_drop():
     full_lower_gripper()
 
     # open the gripper fingers
-    esp32_comms(ser, "open")
+    esp32_comms(ser, "G_OPEN")
 
     sleep(0.2)
     # Elevate the gripper back upwards
@@ -261,11 +261,11 @@ def main():
         # Turn vacuum pump on
         else:
             # Open the gripper fingers
-            esp32_comms(ser, "open")
+            esp32_comms(ser, "G_OPEN")
             # Parameter specifies number of steps required for partial descent
             za.partial_lower_gripper(pd_steps)
             # close fingers
-            esp32_comms(ser, "close")
+            esp32_comms(ser, "G_CLOSE")
 
             full_ele_gripper()
             match type_posi[0]:
