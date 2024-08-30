@@ -1,4 +1,9 @@
 # XY MOVEMENT CONTROLS
+
+#UPDATE 30/8
+#Simultaneous XY Update
+#Smart Encoder Update (Gantry movement direction is now dependent on whether it is infront of the encoder or behind it)
+
 # Summary: Processes information from machine vision, to move stepper motor accordingly
 
 from time import sleep
@@ -92,6 +97,34 @@ def irencstest():
 
 # Dustbin Core Functions######################################################
 
+def SimuHomeXY():
+    x_drv8825_en.off()  # Turn on motor
+    x_drv8825_dir.off()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
+    y_drv8825_en.off()  # Turn on motor
+    y_drv8825_dir.on()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
+
+    while x_homingswitch.is_pressed == True OR y_homingswitch.is_pressed == True:
+        
+    if x_homingswitch.is_pressed == True:
+        x_drv8825_step.blink(background=False, n=abs(2), on_time=time_delay, off_time=time_delay)
+        print("Stepping motor: X")
+
+
+    
+    if y_homingswitch.is_pressed == True:
+        y_drv8825_step.blink(background=False, n=abs(2), on_time=time_delay, off_time=time_delay)
+
+        y_drv8825_step.off()
+        sleep(time_delay)
+
+        print("Stepping motor: Y")
+
+    print("Homing Complete")
+    sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
+    x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
+    y_drv8825_en.value = 1  # Disable the motor, may reduce holding torque but reduce power dissipation
+
+
 # SHORTEST DISTANCE IN STEPS
 def getshortestdist(gripper_posi, typeposi_data, distperpix):
     # DistPerPix assumed to be in cm
@@ -135,7 +168,7 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
     print("Y_short_dif_posi= ", y_short_dif_posi)
     print("coor_chosen_waste= ", coor_chosen_waste)
 
-    return cmToMotorSteps(1.8, 22.41, x_short_dif_posi, y_short_dif_posi)
+    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
 
 
 def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif_posi):
@@ -366,10 +399,16 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 
     elif homing == False and tobin == 0:  # CHANGE ToBin == 1 Incase direction is wrong
         y_drv8825_en.off()  # Enable the motor
-        y_drv8825_dir.value = tobin  # Set motor direction
 
+        if gripper_near_motor = False: #SMART DIRECTION SETTINGS
+                y_drv8825_dir.on()
+            elif gripper_near_motor = True:
+                y_drv8825_dir.off()
+        
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
-        while ir_enc1.value == False:
+        while ir_enc1.value == False: #Platform Origin Enc
+            
+                
             y_drv8825_step.blink(background=False, n=20, on_time=time_delay, off_time=time_delay + 0.0003)
 
             print("Stepping motor Indefinitely Enc1")
