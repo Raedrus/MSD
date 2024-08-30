@@ -7,7 +7,7 @@ from gpiozero import DistanceSensor
 from gpiozero import Button
 from gpiozero import Servo
 from gpiozero import DigitalOutputDevice
-
+from Serial_Pi_ESP32 import esp32_comms
 
 import time
 from time import sleep
@@ -45,8 +45,6 @@ pin_bin3presence = 12
 pin_Platorigin = 22
 pin_bin = 10
 
-#Servos
-pin_platservo = 27
 
 #Stepper Motors
 pin_Xen = 16
@@ -76,8 +74,7 @@ Estop_button = Button(pin_Estop, pull_up=True)
 
 # Limit switch and IR sensor Assignment
 
-# Electromagnet Assignment
-magnet_cluster = DigitalOutputDevice(pin_transistor_magnet)
+
 
 # initiate arrays
 
@@ -94,8 +91,8 @@ webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 
 def start_loop():
-    #magnet_cluster.off()  # Ensure electromagnets are off
-    
+    # Ensure electromagnets are off
+    esp32_comms(ser, "EMAGNET_OFF")
     
     green_led.on()  # Turn on the LED to indicate the dustbin and raspi is powered
     red_led.off()
@@ -127,8 +124,8 @@ def humanPres(detect_range, lid_timeout):
         t0 = time.time()
 
         # open the lid
-        lid_servo.value = 0.5  # Change value of pulsewidth to adjust position of servo
-
+        esp32_comms(ser, "LID_OPEN")
+        
         while True:
 
             t1 = time.time()
@@ -152,9 +149,15 @@ def humanPres(detect_range, lid_timeout):
 
     elif ult_distance > detect_range:
         # Close the lid
-        lid_servo.min()  # Change value of pulsewidth to adjust position of servo
+        esp32_comms(ser, "LID_CLOSE")
         sleep(0.4)
 
 
 def SortingCycle():
+    esp32_comms(ser, "LID_CLOSE")
+    sleep(0.5)
+    esp32_comms(ser, "EMAGNET_ON")
+    sleep(1)
+    esp32_comms(ser, "G_OPEN")
+    
     return
