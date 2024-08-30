@@ -60,8 +60,6 @@ pin_Zstep = 3
 pin_Zdir = 4
 
 # Setup #############################################
-green_led = LED(pin_green_led)  # Change number to assign GPIO number (BCM layout)
-red_led = LED(pin_red_led)  # Change number to assign GPIO number (BCM layout)
 
 
 # Ultrasonic Sensor Assignment, threshold dist settings in meters
@@ -93,9 +91,10 @@ webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 def start_loop():
     # Ensure electromagnets are off
     esp32_comms(ser, "EMAGNET_OFF")
-    
-    green_led.on()  # Turn on the LED to indicate the dustbin and raspi is powered
-    red_led.off()
+
+    esp32_comms(ser, "GLED_ON")
+    esp32_comms(ser, "RLED_OFF")
+
 
     try:
 
@@ -110,6 +109,8 @@ def start_loop():
     finally:
 
         # Used to turn off the LEDs for the prototype while testing
+        esp32_comms(ser, "GLED_OFF")
+        esp32_comms(ser, "RLED_OFF")
         green_led.close()
         red_led.close()
         sys.exit()
@@ -154,10 +155,20 @@ def humanPres(detect_range, lid_timeout):
 
 
 def SortingCycle():
+    #Gate Sequence
     esp32_comms(ser, "LID_CLOSE")
     sleep(0.5)
     esp32_comms(ser, "EMAGNET_ON")
     sleep(1)
     esp32_comms(ser, "G_OPEN")
+    sleep(5)
+    esp32_comms(ser, "G_CLOSE")
+    sleep(1)
+    esp32_comms(ser, "EMAGNET_OFF")
+
+
+
+    
+    
     
     return
