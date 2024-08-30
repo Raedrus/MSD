@@ -7,6 +7,8 @@ from gpiozero import DistanceSensor
 from gpiozero import Button
 from gpiozero import Servo
 from gpiozero import DigitalOutputDevice
+
+
 import time
 from time import sleep
 import serial
@@ -92,15 +94,16 @@ webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 
 def start_loop():
-    magnet_cluster.off()  # Ensure electromagnets are off
+    #magnet_cluster.off()  # Ensure electromagnets are off
+    
+    
     green_led.on()  # Turn on the LED to indicate the dustbin and raspi is powered
     red_led.off()
 
     try:
 
         while True:
-            humanPres(0.3,
-                      5)  # Parameter specifies human detection range in meters,
+            humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
             # second parameter specifies timeout value before it autosorts
 
     except KeyboardInterrupt:
