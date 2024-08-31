@@ -52,6 +52,12 @@ x_drv8825_dir = DigitalOutputDevice(pin_x_drv8825_dir)
 y_homingswitch = Button(9, pull_up=False)
 x_homingswitch = Button(11, pull_up=False)
 
+
+#VARIABLE INITIALIZATION
+gripper_near_motor = False
+
+
+
 # TESTING####################################################################################
 # TEST DATA
 
@@ -97,32 +103,6 @@ def irencstest():
 
 # Dustbin Core Functions######################################################
 
-def SimuHomeXY():
-    x_drv8825_en.off()  # Turn on motor
-    x_drv8825_dir.off()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
-    y_drv8825_en.off()  # Turn on motor
-    y_drv8825_dir.on()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
-
-    while x_homingswitch.is_pressed == True OR y_homingswitch.is_pressed == True:
-        
-    if x_homingswitch.is_pressed == True:
-        x_drv8825_step.blink(background=False, n=abs(2), on_time=time_delay, off_time=time_delay)
-        print("Stepping motor: X")
-
-
-    
-    if y_homingswitch.is_pressed == True:
-        y_drv8825_step.blink(background=False, n=abs(2), on_time=time_delay, off_time=time_delay)
-
-        y_drv8825_step.off()
-        sleep(time_delay)
-
-        print("Stepping motor: Y")
-
-    print("Homing Complete")
-    sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
-    x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
-    y_drv8825_en.value = 1  # Disable the motor, may reduce holding torque but reduce power dissipation
 
 
 # SHORTEST DISTANCE IN STEPS
@@ -171,6 +151,40 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
     return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
 
 
+def SimuHomeXY():
+    time_delay = 0.001
+    
+    
+    
+    x_drv8825_en.off()  # Turn on motor
+    x_drv8825_dir.off()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
+    y_drv8825_en.off()  # Turn on motor
+    y_drv8825_dir.on()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
+
+    while x_homingswitch.is_pressed == True or y_homingswitch.is_pressed == True:
+        
+        if x_homingswitch.is_pressed == True:
+            x_drv8825_step.blink(background=False, n=abs(3), on_time=time_delay, off_time=time_delay)
+            print("Stepping motor: X")
+
+
+        
+        if y_homingswitch.is_pressed == True:
+            y_drv8825_step.blink(background=False, n=abs(3), on_time=time_delay, off_time=time_delay)
+
+            y_drv8825_step.off()
+            sleep(time_delay)
+
+            print("Stepping motor: Y")
+
+    print("Homing Complete")
+    sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
+    x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
+    y_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
+
+    gripper_near_motor = True
+
+
 def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif_posi):
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
@@ -192,7 +206,7 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
     print("X_StepsToTravel= ", x_stepstotravel)
     print("Y_StepsToTravel= ", y_stepstotravel)
 
-    return [x_stepstotravel, y_stepstotravel]
+    return [x_stepstotravel, y_stepstotravel/2] #Compensation happens here since both motors are of different step size
 
 
 # STEPPER MOTOR: COREXY
@@ -384,10 +398,11 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
                 print("Stepping motor: Y")
 
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
-
+            gripper_near_motor == True
             y_drv8825_en.value = 1  # Disable the motor, may reduce holding torque but reduce power dissipation
 
         print("Homing for ", selected_xy, " complete")
+        
 
         if selected_xy == "X":
             gripper_posi[0] = 0  # gripper x position
@@ -400,9 +415,9 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
     elif homing == False and tobin == 0:  # CHANGE ToBin == 1 Incase direction is wrong
         y_drv8825_en.off()  # Enable the motor
 
-        if gripper_near_motor = False: #SMART DIRECTION SETTINGS
+        if gripper_near_motor == False: #SMART DIRECTION SETTINGS
                 y_drv8825_dir.on()
-            elif gripper_near_motor = True:
+        elif gripper_near_motor == True:
                 y_drv8825_dir.off()
         
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
@@ -475,8 +490,8 @@ print("dirXY = ", dirXY)
 
 # drivedrv8825(200, dirY, "Half", "Y", 0.001) #A full rotation under half step
 
-# drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing = True) #HOMING THE X axis
-drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)  # HOMING THE Y axis
+#drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing = True) #HOMING THE X axis
+#drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)  # HOMING THE Y axis
 
 # drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, tobin = 0) #Move the Y-axis towards one encoder
 
@@ -485,12 +500,22 @@ drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)  # HOMING T
 # drivedrv8825(0, dirY, "Full", "XY", 0.0004, list_DirXY = dirXY, list_XYSteps = xy_steps_toDesti) #Move the Y-axis towards the other encoder
 
 
-drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=[0, 2000], invert_xDir=True,
-             invert_yDir=False)  # Direction inversion
+#drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=[0, 2000], invert_xDir=True,
+             #invert_yDir=False)  # Direction inversion
 # Positive direction will y invert  true heads towards home
 # 178mm for 2000 1/4 microstep
 
 # y_drv8825_step.blink(background = False,  n= 800, on_time =0.001, off_time = 0.0004)
+
+
+testdir = cmToMotorSteps(0.45, 17.8, 10, 0)
+#Tuned direction
+drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=testdir, invert_xDir=False, invert_yDir=False)  # Steps
+# given that the direction is not inverted
+# x gantry + to the left if standing on motor side
+# y gantry + away from motor side
+
+#SimuHomeXY()
 
 print("Done")
 sleep(1000)
