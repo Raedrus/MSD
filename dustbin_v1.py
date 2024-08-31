@@ -2,15 +2,15 @@ import ultralytics
 import numpy as np
 import cv2
 import time
+from time import sleep
 from gpiozero import LED
 from gpiozero import DistanceSensor
 from gpiozero import Button
 from gpiozero import Servo
 from gpiozero import DigitalOutputDevice
-from Serial_Pi_ESP32 import esp32_comms
 
-import time
-from time import sleep
+
+
 import serial
 
 import sys  # For testing system quits
@@ -47,6 +47,10 @@ pin_bin = 10
 
 
 #Stepper Motors
+pin_Zen = 2
+pin_Zstep = 3
+pin_Zdir = 4
+
 pin_Xen = 16
 pin_Xstep = 20
 pin_Xdir = 21
@@ -55,9 +59,7 @@ pin_Yen = 18
 pin_Ystep = 23
 pin_Ydir = 24
 
-pin_Zen = 2
-pin_Zstep = 3
-pin_Zdir = 4
+
 
 # Setup #############################################
 
@@ -66,7 +68,7 @@ pin_Zdir = 4
 ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
 
 # Button Assignment
-# In the prototype, the buttons are set to pull down
+# In the prototype, the buttons are set to pull up
 start_button = Button(pin_start, pull_up=True)
 Estop_button = Button(pin_Estop, pull_up=True)
 
@@ -95,24 +97,20 @@ def start_loop():
     esp32_comms(ser, "GLED_ON")
     esp32_comms(ser, "RLED_OFF")
 
-
     try:
-
         while True:
             humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
             # second parameter specifies timeout value before it autosorts
 
     except KeyboardInterrupt:
-        print("Keybard Interrupt!")
+        print("Keyboard Interrupt!")
     except:
         pass
     finally:
-
         # Used to turn off the LEDs for the prototype while testing
         esp32_comms(ser, "GLED_OFF")
         esp32_comms(ser, "RLED_OFF")
-        green_led.close()
-        red_led.close()
+
         sys.exit()
 
 
@@ -126,6 +124,9 @@ def humanPres(detect_range, lid_timeout):
 
         # open the lid
         esp32_comms(ser, "LID_OPEN")
+        sleep(1)
+        esp32_comms(ser, "EMAGNET_ON")
+        sleep(1)
         
         while True:
 
@@ -158,12 +159,10 @@ def SortingCycle():
     #Gate Sequence
     esp32_comms(ser, "LID_CLOSE")
     sleep(0.5)
-    esp32_comms(ser, "EMAGNET_ON")
-    sleep(1)
     esp32_comms(ser, "GATE_OPEN")
     sleep(5)
     esp32_comms(ser, "GATE_CLOSE")
-    sleep(1)
+    sleep(2)
     esp32_comms(ser, "EMAGNET_OFF")
 
     GS.main()
@@ -185,4 +184,9 @@ def SortingCycle():
     #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
     sleep(2)
     
+    return
+
+if __name__ == "__main__":
+    start_loop()
+
     return
