@@ -169,6 +169,7 @@ def SortingCycle():
     GS.main()
 
     sleep(1)
+    #IF condition may be placed here, for tilting direction options
     #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
     sleep(2)
 
@@ -180,6 +181,7 @@ def SortingCycle():
     GS.main()
 
     sleep(1)
+    #IF condition may be placed here, for tilting direction options
     #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
     sleep(2)
     
