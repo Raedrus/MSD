@@ -20,7 +20,7 @@ import psutil  # For testing system quits
 # Function file import
 from WasteSorting import sortingcycle
 from Serial_Pi_ESP32 import esp32_comms
-
+import GripperSegregation as GS
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
@@ -160,15 +160,27 @@ def SortingCycle():
     sleep(0.5)
     esp32_comms(ser, "EMAGNET_ON")
     sleep(1)
-    esp32_comms(ser, "G_OPEN")
+    esp32_comms(ser, "GATE_OPEN")
     sleep(5)
-    esp32_comms(ser, "G_CLOSE")
+    esp32_comms(ser, "GATE_CLOSE")
     sleep(1)
     esp32_comms(ser, "EMAGNET_OFF")
 
+    GS.main()
 
+    sleep(1)
+    #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
+    sleep(2)
 
     
+    esp32_comms(ser, "GATE_OPEN")
+    sleep(5)
+    esp32_comms(ser, "GATE_CLOSE")
     
+    GS.main()
+
+    sleep(1)
+    #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
+    sleep(2)
     
     return
