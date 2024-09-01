@@ -109,7 +109,7 @@ def irencstest():
 def getshortestdist(gripper_posi, typeposi_data, distperpix):
     # DistPerPix assumed to be in cm
 
-    arr_dimensions = typeposi_data.shape
+    arr_dimensions = typeposi_data.shape    # Assign the same matrix form
     typeposi_rows, typeposi_cols = arr_dimensions
 
     current_shortest = float('inf')  # Initialization to a very large value #Needed for choosing shortest distance
@@ -117,20 +117,20 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
     for col_index in range(typeposi_cols):
         print("Waste ", col_index + 1)  # Verify data extracted
 
-        waste_xposi = float(typeposi_data[1][col_index])
-        waste_yposi = float(typeposi_data[2][col_index])
+        waste_xposi = float(typeposi_data[1][col_index])    # Extract x-position of the waste
+        waste_yposi = float(typeposi_data[2][col_index])    # Extract y-position of the waste
 
-        print(" waste_XPosi= ", waste_xposi, " waste_YPosi= ", waste_yposi)  # Verify Data Extracted
+        print(" waste_XPosi= ", waste_xposi, " waste_YPosi= ", waste_yposi)  # Print and Verify Data Extracted
         print("Gripper_Posi X= ", gripper_posi[0], " Gripper_Posi Y= ", gripper_posi[1])
 
-        dif_x = waste_xposi - float(gripper_posi[0])
-        dif_y = waste_yposi - float(gripper_posi[1])
+        dif_x = waste_xposi - float(gripper_posi[0])    # Calculate difference in x-distance between gripper and waste.
+        dif_y = waste_yposi - float(gripper_posi[1])    # Calculate difference in y-distance between gripper and waste.
 
-        print("dif_X= ", dif_x)  # For Verification
-        print("dif_Y= ", dif_y)  # For Verification
+        print("dif_X= ", dif_x)  # Print for verification
+        print("dif_Y= ", dif_y)
 
+        # Calculate the shortest diagonal distance from gripper to the waste
         shortest_dist_cm = round(math.sqrt(abs(dif_x) ** 2 + abs(dif_y) ** 2), 3)
-
         print("shortest_dist_cm=", shortest_dist_cm)  # For Verification
 
         if shortest_dist_cm <= current_shortest:
@@ -139,8 +139,8 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
             y_short_dif_posi = dif_y * distperpix  # Memorize the y-coordinate of the nearest waste (PIXEL MAPPED TO CM)
 
             # Memorize position of chosen waste, it is where the gripper will arrive later:
-            coor_chosen_waste[0] = waste_xposi
-            coor_chosen_waste[1] = waste_yposi
+            coor_chosen_waste[0] = waste_xposi  # Append the x-coordinates of the waste closest to gripper
+            coor_chosen_waste[1] = waste_yposi  # Append the y-coordinates of the waste closest to gripper
 
     # For Verification
     print("current_shortest= ", current_shortest)
@@ -200,13 +200,15 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
     x_short_dif_posi = x_short_dif_posi * 10  # UNIT CONVERSION: cm to mm
     y_short_dif_posi = y_short_dif_posi * 10  # UNIT CONVERSION: cm to mm
 
-    x_stepstotravel = int(x_short_dif_posi / mm_distperstep)
-    y_stepstotravel = int(y_short_dif_posi / mm_distperstep)
+    x_stepstotravel = int(x_short_dif_posi / mm_distperstep)    # Calculate steps to travel in x-axis
+    y_stepstotravel = int(y_short_dif_posi / mm_distperstep)    # Calculate steps to travel in y-axis
 
     print("X_StepsToTravel= ", x_stepstotravel)
     print("Y_StepsToTravel= ", y_stepstotravel)
 
-    return [x_stepstotravel, y_stepstotravel/2] #Compensation happens here since both motors are of different step size
+    # Compensation happens here if motors are of different step size
+    # Example: if x stepper uses 1/4 steps while y stepper uses half steps, y_stepstotravel needs to divide 2 to match.
+    return [x_stepstotravel, y_stepstotravel]
 
 
 # STEPPER MOTOR: COREXY
