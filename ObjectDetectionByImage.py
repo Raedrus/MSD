@@ -41,7 +41,7 @@ def get_mv_data(frame):
 
     waste_symbol = []
 
-    for waste in  waste_type:
+    for waste in waste_type:
         if waste == 'Battery':
             waste_symbol.append("B")
         elif waste == 'E_Devices':

@@ -127,7 +127,7 @@ def ToBinB(waste_sz):
                      homing=True)  # Assuming the bin rests in this limit switch
 
     # Move X towards the needed bin
-    drivedrv8825(0,
+    gan.drivedrv8825(0,
                  dirY,
                  "Full",
                  "XY",
@@ -171,7 +171,7 @@ def ToBinC(waste_sz):
     # xDir has to be determined from checking the right way to turn the motor
 
     # Move the gripper set towards to x limit switch,
-    # this gives it accuracy later on when moviong to the bin
+    # this gives it accuracy later on when moving to the bin
     gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
     gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004,
                      homing=True)  # Assuming the bin rests in this limit switch

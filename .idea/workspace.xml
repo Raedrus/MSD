@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6fcc53f6-7516-4819-950e-12de5ef34b3c" name="Changes" comment="Update Commit">
-      <change beforePath="$PROJECT_DIR$/.idea/MSD.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MSD.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UntestedGripSort/GripperSegregation.py" beforeDir="false" afterPath="$PROJECT_DIR$/GripperSegregation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dustbin_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/dustbin_v1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ObjectDetectionByImage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ObjectDetectionByImage.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +63,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\User\OneDrive\Desktop\Utar_Degree\Year_4_Sem_1\MSD2\Dustbin_Program" />
       <recent name="C:\Users\dingy\Desktop\Utar_Degree\Year_4_Sem_1\MSD2\MSD_Programs" />
     </key>
   </component>
@@ -247,7 +245,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723712081508</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Update Commit">
+      <option name="closed" value="true" />
+      <created>1725117544447</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1725117544447</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
