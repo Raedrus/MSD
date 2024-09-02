@@ -40,7 +40,7 @@ if contours:
     # Get the bounding box of the largest contour
     x, y, w, h = cv2.boundingRect(contour)
 
-    # Calculate the lower left corner of the rectangle
+    # Calculate the lower left corner of the platform rectangle
     origin_image_coords = (x, y + h)
 
     # Draw the rectangle and the origin point for visualization (optional)
