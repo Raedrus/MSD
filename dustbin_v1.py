@@ -9,8 +9,6 @@ from gpiozero import Button
 from gpiozero import Servo
 from gpiozero import DigitalOutputDevice
 
-
-
 import serial
 
 import sys  # For testing system quits
@@ -21,6 +19,7 @@ import psutil  # For testing system quits
 from WasteSorting import sortingcycle
 from Serial_Pi_ESP32 import esp32_comms
 import GripperSegregation as GS
+
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
@@ -29,24 +28,21 @@ ThisSystem = psutil.Process(current_system_pid)
 pin_ult_echo = 6
 pin_ult_trigger = 5
 
-#Start Stop
+# Start Stop
 pin_start = 17
 pin_Estop = 13
 
-#Limit Switches
+# Limit Switches
 pin_Xhome = 11
 pin_Yhome = 9
 pin_Zhome = 25
-pin_bin1presence = 8
-pin_bin2presence = 7
-pin_bin3presence = 12
+pin_binpresence = 19
 
-#Infrared Sensor
+# Infrared Sensor
 pin_Platorigin = 22
 pin_bin = 10
 
-
-#Stepper Motors
+# Stepper Motors
 pin_Zen = 2
 pin_Zstep = 3
 pin_Zdir = 4
@@ -58,8 +54,6 @@ pin_Xdir = 21
 pin_Yen = 18
 pin_Ystep = 23
 pin_Ydir = 24
-
-
 
 # Setup #############################################
 
@@ -73,7 +67,6 @@ start_button = Button(pin_start, pull_up=True)
 Estop_button = Button(pin_Estop, pull_up=True)
 
 # Limit switch and IR sensor Assignment
-
 
 
 # initiate arrays
@@ -94,27 +87,34 @@ def start_loop():
     # Ensure electromagnets are off
     esp32_comms(ser, "EMAGNET_OFF")
 
-    esp32_comms(ser, "GLED_ON")
-    esp32_comms(ser, "RLED_OFF")
-
-    try:
-        while True:
-            humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
-            # second parameter specifies timeout value before it autosorts
-
-    except KeyboardInterrupt:
-        print("Keyboard Interrupt!")
-    except:
-        pass
-    finally:
-        # Used to turn off the LEDs for the prototype while testing
+    if pin_binpresence.is_pressed = False:
         esp32_comms(ser, "GLED_OFF")
+        esp32_comms(ser, "RLED_ON")
+
+    else:
+        esp32_comms(ser, "GLED_ON")
         esp32_comms(ser, "RLED_OFF")
 
-        sys.exit()
+        try:
+            while True:
+                humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
+                # second parameter specifies timeout value before it autosorts
+
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt!")
+        except:
+            pass
+        finally:
+            # Used to turn off the LEDs for the prototype while testing
+            esp32_comms(ser, "GLED_OFF")
+            esp32_comms(ser, "RLED_OFF")
+
+            sys.exit()
 
 
 def humanPres(detect_range, lid_timeout):
+
+
     PrintUltSenseDist()  # For debugging use
 
     ult_distance = float(ult_sensor.distance)
@@ -127,7 +127,7 @@ def humanPres(detect_range, lid_timeout):
         sleep(1)
         esp32_comms(ser, "EMAGNET_ON")
         sleep(1)
-        
+
         while True:
 
             t1 = time.time()
@@ -156,7 +156,7 @@ def humanPres(detect_range, lid_timeout):
 
 
 def SortingCycle():
-    #Gate Sequence
+    # Gate Sequence
     esp32_comms(ser, "LID_CLOSE")
     sleep(0.5)
     esp32_comms(ser, "GATE_OPEN")
@@ -168,25 +168,24 @@ def SortingCycle():
     GS.main()
 
     sleep(1)
-    #IF condition may be placed here, for tilting direction options
-    #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
+    # IF condition may be placed here, for tilting direction options
+    # esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
     sleep(2)
 
-    
     esp32_comms(ser, "GATE_OPEN")
     sleep(5)
     esp32_comms(ser, "GATE_CLOSE")
-    
+
     GS.main()
 
     sleep(1)
-    #IF condition may be placed here, for tilting direction options
-    #esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
+    # IF condition may be placed here, for tilting direction options
+    # esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
     sleep(2)
-    
+
     return
+
 
 if __name__ == "__main__":
     start_loop()
-
     return
