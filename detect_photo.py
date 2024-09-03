@@ -1,6 +1,7 @@
 import cv2
 from ultralytics import YOLO
 import numpy as np
+import time
 
 model = YOLO('best.pt')
 print(model.names)
@@ -8,17 +9,26 @@ webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 # webcamera.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 # webcamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
+# Set the brightness value (brightness range is typically from 0.0 to 1.0)
+brightness_value = 155  # Adjust this value as needed
+webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
+
+# only if needed
+time.sleep(2)  # Wait for 2 seconds to ensure the camera is ready
+
+# Load the origin image to set the origin
 
 # take a photo for origin definition
 success, origin_image = webcamera.read()
-# cv2.imwrite('origin.png', origin_image)
+
+# Define the range for the color green in HSV space
+lower_green = np.array([40, 20, 40])
+upper_green = np.array([80, 100, 255])
+
+
 
 # take a photo for object detection
 success, frame = webcamera.read()
-
-# Define the range for the color green in HSV space
-lower_green = np.array([40, 40, 40])
-upper_green = np.array([80, 255, 255])
 
 
 # Convert the origin image to HSV color space
