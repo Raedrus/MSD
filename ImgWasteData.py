@@ -37,6 +37,7 @@ def GetMVData(frame):
         # Calculate the lower left corner of the rectangle
         origin_image_coords = (x, y + h)
 
+
         # Draw the rectangle and the origin point for visualization (optional)
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.circle(frame, origin_image_coords, 5, (255, 0, 0), -1)  # Mark the origin

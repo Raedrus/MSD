@@ -53,6 +53,8 @@ if contours:
     # Calculate the lower left corner of the platform rectangle
     origin_image_coords = (x, y + h)
 
+    distperpix = round(300/w, 3)
+
     # Draw the rectangle and the origin point for visualization (optional)
     cv2.rectangle(origin_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.circle(origin_image, origin_image_coords, 5, (255, 0, 0), -1)  # Mark the origin
