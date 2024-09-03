@@ -168,9 +168,12 @@ def SortingCycle():
     GS.main()
 
     sleep(1)
-    # IF condition may be placed here, for tilting direction options
-    # esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
-    sleep(2)
+
+    #Platoform servo is connected to Pi Side
+    #First sortation cycle ends with GENERAL waste bring tilted to one platform
+    
+    
+
 
     esp32_comms(ser, "GATE_OPEN")
     sleep(5)
@@ -178,11 +181,10 @@ def SortingCycle():
 
     GS.main()
 
-    sleep(1)
-    # IF condition may be placed here, for tilting direction options
-    # esp32_comms(ser, "EMAGNET_OFF") #REPLACE with string to tilt servo platform
-    sleep(2)
-
+    
+    #Platoform servo is connected to Pi Side
+    #First sortation cycle ends with METAL waste bring tilted to the other platform
+    
     return
 
 
