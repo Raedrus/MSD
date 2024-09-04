@@ -138,5 +138,11 @@ def GetMVData(frame):
     return type_posi
 
 
-
+#Form of the returned type_posi
+#[Waste Type]
+#[]
+#[X box center]
+#[Y box center]
+#[Box Area]
+    
 #print(GetMVData(TakePicture()))
