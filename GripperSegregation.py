@@ -50,6 +50,11 @@ def ToCoordZero():
     gripper_posi[1] = 0
 
 
+#Assumde bin positions:
+#That Bin ABC are only bins gripper drops to, and are near the Y limit switch
+|  |  B |
+|A |----|
+|  |  C |
 def ToBinA(waste_sz):
     # With assumption that the item is already picked up
     # Take the item and drop them at Bin A
