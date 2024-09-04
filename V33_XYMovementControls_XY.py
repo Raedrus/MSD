@@ -142,13 +142,16 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
             coor_chosen_waste[0] = waste_xposi  # Append the x-coordinates of the waste closest to gripper
             coor_chosen_waste[1] = waste_yposi  # Append the y-coordinates of the waste closest to gripper
 
+            #Memorize size of the nearest Waste
+            waste_sz = float(typeposi_data[3][col_index])
+    
     # For Verification
     print("current_shortest= ", current_shortest)
     print("X_short_dif_posi= ", x_short_dif_posi)
     print("Y_short_dif_posi= ", y_short_dif_posi)
     print("coor_chosen_waste= ", coor_chosen_waste)
 
-    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
+    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi), waste_sz
 
 
 def SimuHomeXY():
