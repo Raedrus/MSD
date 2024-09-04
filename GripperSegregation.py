@@ -52,11 +52,25 @@ def ToCoordZero():
 
 #Assumde bin positions:
 #That Bin ABC are only bins gripper drops to, and are near the Y limit switch
-|  |  B |
-|A |----|
-|  |  C |
+#|  |  B |
+#|A |----|
+#|  |  C |
 def ToBinA(waste_sz):
-    # With assumption that the item is already picked up
+    
+    
+    ###
+    #Process Description
+    #1)Home X
+    #2)Home Y
+    #3)Y to Bin A
+    #4)X to Position for Drop
+    #5)Drop item based on size of item gripped
+    #6)Home X
+    
+    ###
+    
+    # With assumption that
+    #the item is already picked up
     # Take the item and drop them at Bin A
 
     # waste_sz in terms pixels detected from the camera, in type_posi array
@@ -118,6 +132,17 @@ def ToBinA(waste_sz):
 
 
 def ToBinB(waste_sz):
+    
+    ###
+    #Process Description
+    #1)Home X
+    #2)Home Y
+    #3)X displaces to top of one of the two bins with xloc
+    #4)Drop type based on size
+    #5)Home X
+    
+    ###
+    
     # With assumption that the item is already picked up
     # Take the item and drop them at Bin B
 
@@ -162,10 +187,15 @@ def ToBinB(waste_sz):
 
     # Return the current position of the gripper after completion of the operation
     # x = 0, because it was homed for calibration
-    return [0, ENC2_POSI]
+    return [0, 0]
 
 
 def ToBinC(waste_sz):
+    ###
+    #Process Description
+    #Similar to Bin B, with different xloc value
+    ###
+    
     # With assumption that the item is already picked up
     # Take the item and drop them at Bin C
 
@@ -174,10 +204,8 @@ def ToBinC(waste_sz):
 
     xDir = 0  # Placeholder values
     xloc = 60  # Placeholder value
-    which_encoder = 0  # Placeholder value
 
-    # The bins that drop gripping items have encoders on them, only a matter of which side
-    # which_encoder is an int of 1 or 0 to control direction (which encoder to move to)
+    
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
 
@@ -212,16 +240,22 @@ def ToBinC(waste_sz):
 
     # Return the current position of the gripper after completion of the operation
     # x = 0, because it was homed for calibration
-    return [0, ENC2_POSI]
+    return [0, 0]
 
 
 # DROPS
 # There are two kinds of drops, the gripper drop or vacuum drop
 def finger_release_drop():
+    #1) Lower the gripper
+    #2) Open te fingers to drop the waste
+    #3) Elevate the gripper back up
+    
     sleep(0.2)
     # lower the z axis
     full_lower_gripper()
 
+    sleep(1)
+    
     # open the gripper fingers
     esp32_comms(ser, "G_OPEN")
 
@@ -231,15 +265,31 @@ def finger_release_drop():
 
 
 def vacuum_release_drop():
-    pass
+    #Lower the gripper
+    #Turn on the vacuum pump
+    #Elevate the gripper
+
+    sleep(0.2)
+    # lower the z axis
+    full_lower_gripper()
+
+    sleep(1)
+    
+    # open the gripper fingers
+    esp32_comms(ser, )
+
+    sleep(0.2)
+    # Elevate the gripper back upwards
+    full_ele_gripper()
 
 
 ##########################################################################################
 
 
 def main():
+    
+    #Initialize the gripper
     full_ele_gripper()
-
     home_XY()
 
     # Detect the image, return the required position and item type data
@@ -249,13 +299,19 @@ def main():
     ToCoordZero()
 
     while len(type_posi[0]) > 0:
+        
+        ###Gripper computes nearest waste
         # The output below is the coordinates of the nearest waste
         # [x, y] in terms of steps
         xy_steps_toDesti = gan.getshortestdist(gripper_posi, type_posi, 20)
+        
+        
+        
         # Obtaining turning directions
         dirX = int(xy_steps_toDesti[0]) >= 0
         dirY = int(xy_steps_toDesti[1]) >= 0
         dirXY = [dirX, dirY]
+        ###
 
         # Move the gripper to the nearest waste
         gan.drivedrv8825(0, dirY, "Full",
@@ -265,11 +321,14 @@ def main():
                          list_XYSteps=xy_steps_toDesti,
                          invert_xDir=True,
                          invert_yDir=True)
-
+        
+        #DECIDE ON A GRIPPING METHOD
+        #Use the vacuum pump on small items
         if waste_sz <= CONST.SMALL_SIZE:
             pass  # Where the vacuum pump is supposed to turn off
-            full_lower_gripper()
-        # Turn vacuum pump on
+            full_lower_gripper()   
+            esp32_comms(ser, "VAC_ON")
+        
         else:
             # Open the gripper fingers
             esp32_comms(ser, "G_OPEN")
@@ -279,13 +338,16 @@ def main():
             esp32_comms(ser, "G_CLOSE")
 
             full_ele_gripper()
-            match type_posi[0]:
-                # Providing size of the waste as input parameter
-                case "B":
-                    ToBinA(type_posi[3])
-                case "E":
-                    ToBinB(type_posi[3])
-                case "M":
-                    ToBinC(type_posi[3])
+            
+        match type_posi[0]:
+            # Providing size of the waste as input parameter
+            case "B":
+                ToBinA(type_posi[3])
+            case "E":
+                ToBinB(type_posi[3])
+            case "M":
+                ToBinC(type_posi[3])
 
+        #Restart the process, the dustbin takes another look at what is left behind
         type_posi = imgD.GetMVData(imgD.TakePicture())
+
