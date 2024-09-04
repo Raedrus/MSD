@@ -59,22 +59,30 @@ def ToBinA(waste_sz):
 
     xDir = 0  # Placeholder values
     xloc = 30  # Placeholder value
-    which_encoder = 1  # Placeholder value
-
-    # The bins that drop gripping items have encoders on them, only a matter of which side
-    # which_encoder is an int of 1 or 0 to control direction (which encoder to move to)
-    # After moving to that location, xloc moves it above the right bin
+    yloc = 30 #Placeholder value
+    
+    # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
 
     # Move the gripper set towards to x limit switch,
-    # this gives it accuracy later on when moviong to the bin
+    # this gives it accuracy later on when moving to the bin
     gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
-    drivedrv8825(ysteps_toDesti,
+
+    #Home the Y
+    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)
+
+
+    #Move Y direction to the required bin
+    drivedrv8825(0,
                  dirY,
                  "Full",
-                 "Y",
-                 0.0004,
-                 tobin=1)  # Move the Y-axis towards one encoder
+                 "XY",
+                 0.001,
+                 list_DirXY=[xDir, 1],
+                 list_XYSteps=[0, yloc],
+                 invert_xDir=True,
+                 invert_yDir=True)  # Direction inversion
+    
 
     # Move X towards the needed bin
     drivedrv8825(0,
@@ -101,22 +109,20 @@ def ToBinA(waste_sz):
 
     # Return the current position of the gripper after completion of the operation
     # x = 0, because it was homed for calibration
-    return [0, ENC1_POSI]
+    return [0, 0]
 
 
 def ToBinB(waste_sz):
     # With assumption that the item is already picked up
-    # Take the item and drop them at Bin A
+    # Take the item and drop them at Bin B
 
     # waste_sz in terms pixels detected from the camera, in type_posi array
     # For now, based on box area (Not foolproof for standing items)
 
     xDir = 0  # Placeholder values
     xloc = 30  # Placeholder value
-    which_encoder = 0  # Placeholder value
+    
 
-    # The bins that drop gripping items have encoders on them, only a matter of which side
-    # which_encoder is an int of 1 or 0 to control direction (which encoder to move to)
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
 
@@ -156,7 +162,7 @@ def ToBinB(waste_sz):
 
 def ToBinC(waste_sz):
     # With assumption that the item is already picked up
-    # Take the item and drop them at Bin A
+    # Take the item and drop them at Bin C
 
     # waste_sz in terms pixels detected from the camera, in type_posi array
     # For now, based on box area (Not foolproof for standing items)
