@@ -303,7 +303,7 @@ def main():
         ###Gripper computes nearest waste
         # The output below is the coordinates of the nearest waste
         # [x, y] in terms of steps
-        xy_steps_toDesti = gan.getshortestdist(gripper_posi, type_posi, 20)
+        xy_steps_toDesti, waste_sz = gan.getshortestdist(gripper_posi, type_posi, 20) #Last parameter is distance per pixel value
         
         
         
