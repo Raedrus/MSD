@@ -10,6 +10,10 @@ import ZAxis as za
 import serial
 from Serial_Pi_ESP32 import esp32_comms
 
+print("Gripper Segregation")
+
+
+
 # Variables##########################################
 gripper_posi = [0, 0]  # Current gripper coordinates in steps
 
@@ -351,3 +355,11 @@ def main():
         #Restart the process, the dustbin takes another look at what is left behind
         type_posi = imgD.GetMVData(imgD.TakePicture())
 
+
+#esp32_comms(ser, "G_CLOSE")
+
+print("Grip Segregation Program Ended")
+
+
+
+home_XY()
