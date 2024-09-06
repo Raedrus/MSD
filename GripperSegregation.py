@@ -28,8 +28,8 @@ ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
 def home_XY():
     # Home the axis at the start and at the very end
 
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
+    gan.drivedrv8825(0, 0, "Full", "X", 0.0004, homing=True)
     esp32_comms(ser, "G_OPEN")
 
 
@@ -41,14 +41,14 @@ def ToCoordZero():
     # The gripper goes to 0 coordinate of the camera frame
 
     # ASSUMING THIS ENCODER IS THE HOME POSITION ENCODER
-    drivedrv8825(ysteps_toDesti,
+    drivedrv8825(0,
                  dirY,
                  "Full",
                  "Y",
                  0.0004,
                  tobin=1)  # Move the Y-axis towards one encoder
 
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
 
     gripper_posi[0] = 0
     gripper_posi[1] = 0
@@ -89,10 +89,10 @@ def ToBinA(waste_sz):
 
     # Move the gripper set towards to x limit switch,
     # this gives it accuracy later on when moving to the bin
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
 
     #Home the Y
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004, homing=True)
 
 
     #Move Y direction to the required bin
@@ -126,7 +126,7 @@ def ToBinA(waste_sz):
         finger_release_drop()
 
     # Move x back to it's limit switch to recalibrate
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
 
     print("Waste to Bin A was Attempted")
 
@@ -162,8 +162,8 @@ def ToBinB(waste_sz):
 
     # Move the gripper set towards to x limit switch,
     # this gives it accuracy later on when moviong to the bin
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004,
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004,
                      homing=True)  # Assuming the bin rests in this limit switch
 
     # Move X towards the needed bin
@@ -185,7 +185,7 @@ def ToBinB(waste_sz):
         finger_release_drop()
 
     # Move x back to it's limit switch to recalibrate
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
 
     print("Waste to Bin A was Attempted")
 
@@ -215,8 +215,8 @@ def ToBinC(waste_sz):
 
     # Move the gripper set towards to x limit switch,
     # this gives it accuracy later on when moving to the bin
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004,
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004,
                      homing=True)  # Assuming the bin rests in this limit switch
 
     # Move X towards the needed bin
@@ -238,7 +238,7 @@ def ToBinC(waste_sz):
         finger_release_drop()
 
     # Move x back to it's limit switch to recalibrate
-    gan.drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
 
     print("Waste to Bin A was Attempted")
 
@@ -358,8 +358,11 @@ def main():
 
 #esp32_comms(ser, "G_CLOSE")
 
+
+home_XY()
+
 print("Grip Segregation Program Ended")
 
 
 
-home_XY()
+
