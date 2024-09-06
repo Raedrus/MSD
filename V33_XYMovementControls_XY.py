@@ -39,6 +39,8 @@ x_drv8825_dir = DigitalOutputDevice(pin_x_drv8825_dir)
 y_homingswitch = Button(9, pull_up=False)
 x_homingswitch = Button(11, pull_up=False)
 #VARIABLE INITIALIZATION
+
+global gripper_near_motor
 gripper_near_motor = False
 # TESTING####################################################################################
 # TEST DATA
@@ -138,6 +140,8 @@ def SimuHomeXY():
     x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
     y_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
     gripper_near_motor = True
+    print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
+    
 def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif_posi):
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
@@ -262,6 +266,9 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
     else:
         print("WARNING: UNKNOWN CHOICE FOR GANTRY (X OR Y OR XY?)")
     if homing == False and tobin == None:
+        gripper_near_motor = False
+        print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
+        
         if selected_xy == "X":
             x_drv8825_step.blink(background=False, n=abs(steps - x_offset), on_time=time_delay, off_time=time_delay)
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
@@ -310,7 +317,9 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
                 sleep(time_delay)
                 print("Stepping motor: Y")
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
-            gripper_near_motor == True
+            gripper_near_motor = True
+            print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
+            
             y_drv8825_en.value = 1  # Disable the motor, may reduce holding torque but reduce power dissipation
         print("Homing for ", selected_xy, " complete")
         
@@ -321,7 +330,11 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         print("\n")
         print("Gripper position updated [Homing]= ", gripper_posi)
     elif homing == False and tobin == 0:  # CHANGE ToBin == 1 Incase direction is wrong
+        gripper_near_motor = False
+        
         y_drv8825_en.off()  # Enable the motor
+        
+        print(F"ENCODER DIRECTION DECISION: gripper_near_motor = {gripper_near_motor}")
         if gripper_near_motor == False: #SMART DIRECTION SETTINGS
                 y_drv8825_dir.on()
         elif gripper_near_motor == True:
@@ -339,6 +352,8 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         print("Gripper position updated = ", gripper_posi)
         y_drv8825_en.on()  # Turn the motor off
     elif homing == False and tobin == 1:  # CHANGE ToBin == 0 Incase direction is wrong
+        gripper_near_motor = False
+        
         y_drv8825_en.off()  # Enable the motor
         y_drv8825_dir.value = 0  # Set motor direction
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
@@ -393,7 +408,7 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 # y gantry + away from motor side
 #SimuHomeXY()
 
-#drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)
+#drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
 
 print("XYMovement Module: Done")
 #sleep(1000)
