@@ -10,6 +10,8 @@ import ZAxis as za
 import serial
 from Serial_Pi_ESP32 import esp32_comms
 
+from time import sleep
+
 print("Gripper Segregation")
 
 
@@ -28,8 +30,8 @@ ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
 def home_XY():
     # Home the axis at the start and at the very end
 
-    gan.drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
-    gan.drivedrv8825(0, 0, "Full", "X", 0.0004, homing=True)
+    gan.SimuHomeXY()
+    
     esp32_comms(ser, "G_OPEN")
 
 
@@ -41,14 +43,14 @@ def ToCoordZero():
     # The gripper goes to 0 coordinate of the camera frame
 
     # ASSUMING THIS ENCODER IS THE HOME POSITION ENCODER
-    drivedrv8825(0,
-                 dirY,
+    gan.drivedrv8825(0,
+                 0,
                  "Full",
                  "Y",
                  0.0004,
-                 tobin=1)  # Move the Y-axis towards one encoder
+                 tobin=0)  # Move the Y-axis towards encoder1
 
-    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, 0, "Full", "X", 0.0004, homing=True)
 
     gripper_posi[0] = 0
     gripper_posi[1] = 0
@@ -87,17 +89,12 @@ def ToBinA(waste_sz):
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
 
-    # Move the gripper set towards to x limit switch,
-    # this gives it accuracy later on when moving to the bin
-    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
-
-    #Home the Y
-    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004, homing=True)
+    gan.SimuHomeXY()
 
 
     #Move Y direction to the required bin
-    drivedrv8825(0,
-                 dirY,
+    gan.drivedrv8825(0,
+                 1,
                  "Full",
                  "XY",
                  0.001,
@@ -108,8 +105,8 @@ def ToBinA(waste_sz):
     
 
     # Move X towards the needed bin
-    drivedrv8825(0,
-                 dirY,
+    gan.drivedrv8825(0,
+                 0,
                  "Full",
                  "XY",
                  0.001,
@@ -126,7 +123,7 @@ def ToBinA(waste_sz):
         finger_release_drop()
 
     # Move x back to it's limit switch to recalibrate
-    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, 1, "Full", "X", 0.0004, homing=True)
 
     print("Waste to Bin A was Attempted")
 
@@ -160,15 +157,11 @@ def ToBinB(waste_sz):
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
 
-    # Move the gripper set towards to x limit switch,
-    # this gives it accuracy later on when moviong to the bin
-    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
-    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004,
-                     homing=True)  # Assuming the bin rests in this limit switch
+    gan.SimuHomeXY()
 
     # Move X towards the needed bin
     gan.drivedrv8825(0,
-                 dirY,
+                 0,
                  "Full",
                  "XY",
                  0.001,
@@ -213,15 +206,11 @@ def ToBinC(waste_sz):
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
 
-    # Move the gripper set towards to x limit switch,
-    # this gives it accuracy later on when moving to the bin
-    gan.drivedrv8825(0, dirY, "Full", "X", 0.0004, homing=True)
-    gan.drivedrv8825(0, dirY, "Full", "Y", 0.0004,
-                     homing=True)  # Assuming the bin rests in this limit switch
+    gan.SimuHomeXY()
 
     # Move X towards the needed bin
-    drivedrv8825(0,
-                 dirY,
+    gan.drivedrv8825(0,
+                 0,
                  "Full",
                  "XY",
                  0.001,
@@ -256,7 +245,7 @@ def finger_release_drop():
     
     sleep(0.2)
     # lower the z axis
-    full_lower_gripper()
+    za.full_lower_gripper()
 
     sleep(1)
     
@@ -265,7 +254,7 @@ def finger_release_drop():
 
     sleep(0.2)
     # Elevate the gripper back upwards
-    full_ele_gripper()
+    za.full_ele_gripper()
 
 
 def vacuum_release_drop():
@@ -275,16 +264,16 @@ def vacuum_release_drop():
 
     sleep(0.2)
     # lower the z axis
-    full_lower_gripper()
+    za.full_lower_gripper()
 
     sleep(1)
     
     # open the gripper fingers
-    esp32_comms(ser, )
+    esp32_comms(ser, "G_OPEN")
 
     sleep(0.2)
     # Elevate the gripper back upwards
-    full_ele_gripper()
+    za.full_ele_gripper()
 
 
 ##########################################################################################
@@ -293,7 +282,7 @@ def vacuum_release_drop():
 def main():
     
     #Initialize the gripper
-    full_ele_gripper()
+    za.full_ele_gripper()
     home_XY()
 
     # Detect the image, return the required position and item type data
@@ -330,7 +319,7 @@ def main():
         #Use the vacuum pump on small items
         if waste_sz <= CONST.SMALL_SIZE:
             pass  # Where the vacuum pump is supposed to turn off
-            full_lower_gripper()   
+            za.full_lower_gripper()   
             esp32_comms(ser, "VAC_ON")
         
         else:
@@ -341,7 +330,7 @@ def main():
             # close fingers
             esp32_comms(ser, "G_CLOSE")
 
-            full_ele_gripper()
+            za.full_ele_gripper()
             
         match type_posi[0]:
             # Providing size of the waste as input parameter
@@ -359,7 +348,16 @@ def main():
 #esp32_comms(ser, "G_CLOSE")
 
 
-home_XY()
+#home_XY()
+#ToCoordZero()
+#ToBinA(50)
+#ToBinB(50)
+#ToBinC(50)
+
+#finger_release_drop()
+#vacuum_release_drop()
+
+main()
 
 print("Grip Segregation Program Ended")
 
