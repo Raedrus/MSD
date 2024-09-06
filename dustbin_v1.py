@@ -16,17 +16,17 @@ import os  # For testing system quits
 import psutil  # For testing system quits
 
 # Function file import
-from WasteSorting import sortingcycle
+#from WasteSorting import sortingcycle
 from Serial_Pi_ESP32 import esp32_comms
-import GripperSegregation as GS
+import Gripper_Segregation as GS
 
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
 ################## GPIO Assignments################################################################
 # Ultrasonic Sensor
-pin_ult_echo = 6
-pin_ult_trigger = 5
+pin_ult_echo = 26
+pin_ult_trigger = 4
 
 # Start Stop
 pin_start = 17
@@ -87,7 +87,7 @@ def start_loop():
     # Ensure electromagnets are off
     esp32_comms(ser, "EMAGNET_OFF")
 
-    if pin_binpresence.is_pressed = False:
+    if pin_binpresence.is_pressed == False:
         esp32_comms(ser, "GLED_OFF")
         esp32_comms(ser, "RLED_ON")
 
@@ -134,8 +134,7 @@ def humanPres(detect_range, lid_timeout):
             if start_button.is_pressed:
                 # Begin the sorting cycle
 
-                # PLACEHOLDER SORTING CYCLE
-                print("ButtonTrig: The simulated sorting cycle begins")  # For Debugging
+                print("ButtonTrig: The  sorting cycle begins")  # For Debugging
                 SortingCycle()
 
                 # Reset the timer
@@ -143,8 +142,7 @@ def humanPres(detect_range, lid_timeout):
 
             if t1 - t0 > lid_timeout:
                 print("Timeout, attempt to start the process")
-                # PLACEHOLDER SORTING CYCLE
-                print("Timeout: The simulated sorting cycle begins")  # For Debugging
+                print("Timeout: The sorting cycle begins")  # For Debugging
                 SortingCycle()
                 # Reset the timer
                 break
@@ -174,7 +172,6 @@ def SortingCycle():
     
     
 
-
     esp32_comms(ser, "GATE_OPEN")
     sleep(5)
     esp32_comms(ser, "GATE_CLOSE")
@@ -188,6 +185,13 @@ def SortingCycle():
     return
 
 
-if __name__ == "__main__":
-    start_loop()
-    return
+    #Remove lines below?
+    if __name__ == "__main__":
+        start_loop()
+        return
+
+
+
+
+#The main program
+start_loop()
