@@ -335,17 +335,20 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         y_drv8825_en.off()  # Enable the motor
         
         print(F"ENCODER DIRECTION DECISION: gripper_near_motor = {gripper_near_motor}")
+        print("ENC SMART DIRECTIONS")
         if gripper_near_motor == False: #SMART DIRECTION SETTINGS
-                y_drv8825_dir.on()
-        elif gripper_near_motor == True:
                 y_drv8825_dir.off()
+        elif gripper_near_motor == True:
+                y_drv8825_dir.on()
         
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
         while ir_enc1.value == False: #Platform Origin Enc
             
                 
             y_drv8825_step.blink(background=False, n=20, on_time=time_delay, off_time=time_delay + 0.0003)
-            print("Stepping motor Indefinitely Enc1")
+            print("Stepping motor Indefinitely Platform Origin")
+            
+            
         # Update the Y position
         gripper_posi[1] = ENC1_COOR  # gripper y position
         print("\n")
@@ -357,8 +360,8 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         y_drv8825_en.off()  # Enable the motor
         y_drv8825_dir.value = 0  # Set motor direction
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
-        while ir_enc2.value == False:
-            y_drv8825_step.blink(background=False, n=3000, on_time=time_delay, off_time=time_delay)
+        while ir_enc2.value == True:
+            y_drv8825_step.blink(background=False, n=30, on_time=time_delay, off_time=time_delay)
             print("Stepping motor Indefinitely to Enc2")
         # Update the Y position
         gripper_posi[1] = ENC2_COOR  # gripper y position
@@ -409,6 +412,8 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 #SimuHomeXY()
 
 #drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
+
+#SimuHomeXY()
 
 print("XYMovement Module: Done")
 #sleep(1000)
