@@ -1,6 +1,17 @@
 # Gripping cycle refers to:
 # Object detection --> obtain number of objects and coordinates --> gripper sorting until no items remain
 
+##TESTING PLAT STABILIZER
+from gpiozero import AngularServo
+
+pin_plat_servo = 27
+plat_servo = AngularServo(27, min_pulse_width=0.0005, max_pulse_width=0.0025)
+plat_servo.angle = 0
+plat_servo.angle = None
+
+#################
+
+
 import CONST  # constant values only, coordinates and such
 
 import ImgWasteData as imgD  # Image Data
@@ -13,8 +24,6 @@ from Serial_Pi_ESP32 import esp32_comms
 from time import sleep
 
 print("Gripper Segregation")
-
-
 
 # Variables##########################################
 gripper_posi = [0, 0]  # Current gripper coordinates in steps
@@ -31,7 +40,7 @@ def home_XY():
     # Home the axis at the start and at the very end
 
     gan.SimuHomeXY()
-    
+
     esp32_comms(ser, "G_OPEN")
 
 
@@ -44,11 +53,11 @@ def ToCoordZero():
 
     # ASSUMING THIS ENCODER IS THE HOME POSITION ENCODER
     gan.drivedrv8825(0,
-                 0,
-                 "Full",
-                 "Y",
-                 0.0004,
-                 tobin=0)  # Move the Y-axis towards encoder1
+                     0,
+                     "Full",
+                     "Y",
+                     0.0004,
+                     tobin=0)  # Move the Y-axis towards encoder1
 
     gan.drivedrv8825(0, 0, "Full", "X", 0.0004, homing=True)
 
@@ -56,27 +65,25 @@ def ToCoordZero():
     gripper_posi[1] = 0
 
 
-#Assumde bin positions:
-#That Bin ABC are only bins gripper drops to, and are near the Y limit switch
-#|  |  B |
-#|A |----|
-#|  |  C |
+# Assumde bin positions:
+# That Bin ABC are only bins gripper drops to, and are near the Y limit switch
+# |  |  B |
+# |A |----|
+# |  |  C |
 def ToBinA(waste_sz):
-    
-    
     ###
-    #Process Description
-    #1)Home X
-    #2)To bin in Y
-    #3)Y to Bin A
-    #4)X to Position for Drop
-    #5)Drop item based on size of item gripped
-    #6)Home X
-    
+    # Process Description
+    # 1)Home X
+    # 2)To bin in Y
+    # 3)Y to Bin A
+    # 4)X to Position for Drop
+    # 5)Drop item based on size of item gripped
+    # 6)Home X
+
     ###
-    
+
     # With assumption that
-    #the item is already picked up
+    # the item is already picked up
     # Take the item and drop them at Bin A
 
     # waste_sz in terms pixels detected from the camera, in type_posi array
@@ -84,39 +91,36 @@ def ToBinA(waste_sz):
 
     xDir = 0  # Placeholder values
     xloc = 30  # Placeholder value
-    yloc = 30 #Placeholder value
-    
+    yloc = 30  # Placeholder value
+
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
-    
+
     gan.drivedrv8825(0, 1, "Full", "X", 0.0004, homing=True)
-    
-    gan.drivedrv8825(0,0,"Full","Y",0.0004,tobin=1)  # Move the Y-axis towards encoder1
-    
 
+    gan.drivedrv8825(0, 0, "Full", "Y", 0.0004, tobin=1)  # Move the Y-axis towards encoder1
 
-    #Move Y direction to the required bin
+    # Move Y direction to the required bin
     gan.drivedrv8825(0,
-                 1,
-                 "Full",
-                 "XY",
-                 0.001,
-                 list_DirXY=[xDir, 1],
-                 list_XYSteps=[0, yloc],
-                 invert_xDir=True,
-                 invert_yDir=True)  # Direction inversion
-    
+                     1,
+                     "Full",
+                     "XY",
+                     0.001,
+                     list_DirXY=[xDir, 1],
+                     list_XYSteps=[0, yloc],
+                     invert_xDir=True,
+                     invert_yDir=True)  # Direction inversion
 
     # Move X towards the needed bin
     gan.drivedrv8825(0,
-                 0,
-                 "Full",
-                 "XY",
-                 0.001,
-                 list_DirXY=[xDir, 1],
-                 list_XYSteps=[xloc, 0],
-                 invert_xDir=True,
-                 invert_yDir=True)  # Direction inversion
+                     0,
+                     "Full",
+                     "XY",
+                     0.001,
+                     list_DirXY=[xDir, 1],
+                     list_XYSteps=[xloc, 0],
+                     invert_xDir=True,
+                     invert_yDir=True)  # Direction inversion
 
     # Use a specific type of grip depending on size
 
@@ -136,17 +140,16 @@ def ToBinA(waste_sz):
 
 
 def ToBinB(waste_sz):
-    
     ###
-    #Process Description
-    #1)Home X
-    #2)Home Y
-    #3)X displaces to top of one of the two bins with xloc
-    #4)Drop type based on size
-    #5)Home X
-    
+    # Process Description
+    # 1)Home X
+    # 2)Home Y
+    # 3)X displaces to top of one of the two bins with xloc
+    # 4)Drop type based on size
+    # 5)Home X
+
     ###
-    
+
     # With assumption that the item is already picked up
     # Take the item and drop them at Bin B
 
@@ -155,7 +158,6 @@ def ToBinB(waste_sz):
 
     xDir = 0  # Placeholder values
     xloc = 30  # Placeholder value
-    
 
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
@@ -164,14 +166,14 @@ def ToBinB(waste_sz):
 
     # Move X towards the needed bin
     gan.drivedrv8825(0,
-                 0,
-                 "Full",
-                 "XY",
-                 0.001,
-                 list_DirXY=[xDir, 1],
-                 list_XYSteps=[xloc, 0],
-                 invert_xDir=True,
-                 invert_yDir=True)  # Direction inversion
+                     0,
+                     "Full",
+                     "XY",
+                     0.001,
+                     list_DirXY=[xDir, 1],
+                     list_XYSteps=[xloc, 0],
+                     invert_xDir=True,
+                     invert_yDir=True)  # Direction inversion
 
     # Use a specific type of grip depending on size
 
@@ -192,10 +194,10 @@ def ToBinB(waste_sz):
 
 def ToBinC(waste_sz):
     ###
-    #Process Description
-    #Similar to Bin B, with different xloc value
+    # Process Description
+    # Similar to Bin B, with different xloc value
     ###
-    
+
     # With assumption that the item is already picked up
     # Take the item and drop them at Bin C
 
@@ -205,7 +207,6 @@ def ToBinC(waste_sz):
     xDir = 0  # Placeholder values
     xloc = 60  # Placeholder value
 
-    
     # After moving to that location, xloc moves it above the right bin
     # xDir has to be determined from checking the right way to turn the motor
 
@@ -213,14 +214,14 @@ def ToBinC(waste_sz):
 
     # Move X towards the needed bin
     gan.drivedrv8825(0,
-                 0,
-                 "Full",
-                 "XY",
-                 0.001,
-                 list_DirXY=[xDir, 1],
-                 list_XYSteps=[xloc, 0],
-                 invert_xDir=True,
-                 invert_yDir=True)  # Direction inversion
+                     0,
+                     "Full",
+                     "XY",
+                     0.001,
+                     list_DirXY=[xDir, 1],
+                     list_XYSteps=[xloc, 0],
+                     invert_xDir=True,
+                     invert_yDir=True)  # Direction inversion
 
     # Use a specific type of grip depending on size
 
@@ -242,16 +243,16 @@ def ToBinC(waste_sz):
 # DROPS
 # There are two kinds of drops, the gripper drop or vacuum drop
 def finger_release_drop():
-    #1) Lower the gripper
-    #2) Open te fingers to drop the waste
-    #3) Elevate the gripper back up
-    
+    # 1) Lower the gripper
+    # 2) Open te fingers to drop the waste
+    # 3) Elevate the gripper back up
+
     sleep(0.2)
     # lower the z axis
     za.full_lower_gripper()
 
     sleep(1)
-    
+
     # open the gripper fingers
     esp32_comms(ser, "G_OPEN")
 
@@ -261,16 +262,16 @@ def finger_release_drop():
 
 
 def vacuum_release_drop():
-    #Lower the gripper
-    #Turn on the vacuum pump
-    #Elevate the gripper
+    # Lower the gripper
+    # Turn on the vacuum pump
+    # Elevate the gripper
 
     sleep(0.2)
     # lower the z axis
     za.full_lower_gripper()
 
     sleep(1)
-    
+
     # open the gripper fingers
     esp32_comms(ser, "G_OPEN")
 
@@ -283,8 +284,7 @@ def vacuum_release_drop():
 
 
 def main():
-    
-    #Initialize the gripper
+    # Initialize the gripper
     za.full_ele_gripper()
     home_XY()
 
@@ -295,14 +295,13 @@ def main():
     ToCoordZero()
 
     while len(type_posi[0]) > 0:
-        
+
         ###Gripper computes nearest waste
         # The output below is the coordinates of the nearest waste
         # [x, y] in terms of steps
-        xy_steps_toDesti, waste_sz = gan.getshortestdist(gripper_posi, type_posi, 20) #Last parameter is distance per pixel value
-        
-        
-        
+        xy_steps_toDesti, waste_sz = gan.getshortestdist(gripper_posi, type_posi,
+                                                         20)  # Last parameter is distance per pixel value
+
         # Obtaining turning directions
         dirX = int(xy_steps_toDesti[0]) >= 0
         dirY = int(xy_steps_toDesti[1]) >= 0
@@ -317,14 +316,14 @@ def main():
                          list_XYSteps=xy_steps_toDesti,
                          invert_xDir=True,
                          invert_yDir=True)
-        
-        #DECIDE ON A GRIPPING METHOD
-        #Use the vacuum pump on small items
+
+        # DECIDE ON A GRIPPING METHOD
+        # Use the vacuum pump on small items
         if waste_sz <= CONST.SMALL_SIZE:
             pass  # Where the vacuum pump is supposed to turn off
-            za.full_lower_gripper()   
+            za.full_lower_gripper()
             esp32_comms(ser, "VAC_ON")
-        
+
         else:
             # Open the gripper fingers
             esp32_comms(ser, "G_OPEN")
@@ -334,7 +333,7 @@ def main():
             esp32_comms(ser, "G_CLOSE")
 
             za.full_ele_gripper()
-            
+
         match type_posi[0]:
             # Providing size of the waste as input parameter
             case "B":
@@ -344,30 +343,48 @@ def main():
             case "M":
                 ToBinC(type_posi[3])
 
-        #Restart the process, the dustbin takes another look at what is left behind
+        # Restart the process, the dustbin takes another look at what is left behind
         type_posi = imgD.GetMVData(imgD.TakePicture())
 
 
-#esp32_comms(ser, "G_CLOSE")
+# esp32_comms(ser, "G_CLOSE")
 
 
-#home_XY()
-#ToCoordZero()
-ToBinA(50)
-#ToBinB(50)
-#ToBinC(50)
+# home_XY()
+# ToCoordZero()
+# ToBinA(50)
+# ToBinB(50)
+# ToBinC(50)
 
-#finger_release_drop()
-#vacuum_release_drop()
+# finger_release_drop()
+# vacuum_release_drop()
 
-#main()
+# main()
 
-#home_XY()
+# home_XY()
 
-#ToCoordZero()
+# ToCoordZero()
+
+
+gan.SimuHomeXY()
+
+type_posi = imgD.GetMVData(imgD.TakePicture())
+
+ToCoordZero()
+
+xy_steps_toDesti, waste_sz = gan.getshortestdist([0, 0], type_posi,
+                                                 30 / 223)  # Last parameter is distance per pixel value
+
+# Obtaining turning directions
+dirX = int(xy_steps_toDesti[0]) >= 0
+dirY = int(xy_steps_toDesti[1]) >= 0
+dirXY = [dirX, dirY]
+###
+
+# Move the gripper to the nearest waste
+
+
+gan.drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=dirXY, list_XYSteps=xy_steps_toDesti, invert_xDir=False,
+                 invert_yDir=True)
 
 print("Grip Segregation Program Ended")
-
-
-
-

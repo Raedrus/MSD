@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6fcc53f6-7516-4819-950e-12de5ef34b3c" name="Changes" comment="Update Commit">
-      <change beforePath="$PROJECT_DIR$/.idea/MSD.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MSD.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FunctionTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/FunctionTest.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ImgWasteData.py" beforeDir="false" afterPath="$PROJECT_DIR$/ImgWasteData.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/detect_photo.py" beforeDir="false" afterPath="$PROJECT_DIR$/detect_photo.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,7 +38,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Raedrus/MSD.git&quot;,
-    &quot;accountId&quot;: &quot;0fb88a2f-2304-4c2a-a77b-ccc7afa3a757&quot;
+    &quot;accountId&quot;: &quot;a8fdeb70-ce78-4fc0-9d29-83433cf399a6&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
@@ -52,18 +50,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Python.detect_photo.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_func.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.train.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/dingy/Desktop/Utar_Degree/Year_4_Sem_1/MSD2/MSD_Programs&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Python.FunctionTest.executor": "Run",
+    "Python.detect_photo.executor": "Run",
+    "Python.test_func.executor": "Debug",
+    "Python.train.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/dingy/Desktop/Utar_Degree/Year_4_Sem_1/MSD2/MSD_Programs",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\User\OneDrive\Desktop\Utar_Degree\Year_4_Sem_1\MSD2\Dustbin_Program" />
@@ -158,7 +157,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82" />
+        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
@@ -291,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725181487652</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Update Commit">
+      <option name="closed" value="true" />
+      <created>1725355727000</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1725355727000</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
