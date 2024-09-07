@@ -67,7 +67,7 @@ def ToBinA(waste_sz):
     ###
     #Process Description
     #1)Home X
-    #2)Home Y
+    #2)To bin in Y
     #3)Y to Bin A
     #4)X to Position for Drop
     #5)Drop item based on size of item gripped
@@ -88,8 +88,11 @@ def ToBinA(waste_sz):
     
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
-
-    gan.SimuHomeXY()
+    
+    gan.drivedrv8825(0, 1, "Full", "X", 0.0004, homing=True)
+    
+    gan.drivedrv8825(0,0,"Full","Y",0.0004,tobin=1)  # Move the Y-axis towards encoder1
+    
 
 
     #Move Y direction to the required bin
@@ -350,14 +353,18 @@ def main():
 
 #home_XY()
 #ToCoordZero()
-#ToBinA(50)
+ToBinA(50)
 #ToBinB(50)
 #ToBinC(50)
 
 #finger_release_drop()
 #vacuum_release_drop()
 
-main()
+#main()
+
+#home_XY()
+
+#ToCoordZero()
 
 print("Grip Segregation Program Ended")
 
