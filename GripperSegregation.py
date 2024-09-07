@@ -1,6 +1,16 @@
 # Gripping cycle refers to:
 # Object detection --> obtain number of objects and coordinates --> gripper sorting until no items remain
 
+##TESTING PLAT STABILIZER
+from gpiozero import AngularServo
+pin_plat_servo = 27
+plat_servo=AngularServo(27, min_pulse_width=0.0005, max_pulse_width=0.0025)
+plat_servo.angle = 0
+plat_servo.angle= None
+
+#################
+
+
 import CONST  # constant values only, coordinates and such
 
 import ImgWasteData as imgD  # Image Data
@@ -351,9 +361,10 @@ def main():
 #esp32_comms(ser, "G_CLOSE")
 
 
+ 
 #home_XY()
 #ToCoordZero()
-ToBinA(50)
+#ToBinA(50)
 #ToBinB(50)
 #ToBinC(50)
 
@@ -366,8 +377,31 @@ ToBinA(50)
 
 #ToCoordZero()
 
+
+gan.SimuHomeXY()
+
+
+type_posi = imgD.GetMVData(imgD.TakePicture())
+
+
+
+
+ToCoordZero()
+
+xy_steps_toDesti, waste_sz = gan.getshortestdist([0,0], type_posi, 30/223) #Last parameter is distance per pixel value
+        
+       
+        
+# Obtaining turning directions
+dirX = int(xy_steps_toDesti[0]) >= 0
+dirY = int(xy_steps_toDesti[1]) >= 0
+dirXY = [dirX, dirY]
+        ###
+
+# Move the gripper to the nearest waste
+
+
+gan.drivedrv8825(0, dirY, "Full","XY",0.001,list_DirXY=dirXY,list_XYSteps=xy_steps_toDesti,invert_xDir=False,invert_yDir=True)
+
+
 print("Grip Segregation Program Ended")
-
-
-
-
