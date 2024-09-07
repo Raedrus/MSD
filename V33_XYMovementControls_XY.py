@@ -113,7 +113,9 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
 
     #return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
     
-    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi), waste_sz
+    
+    #TUNING VALUE: 17.8*4
+    return cmToMotorSteps(0.45, 17.8*4, x_short_dif_posi, y_short_dif_posi), waste_sz
 
 
 def SimuHomeXY():
