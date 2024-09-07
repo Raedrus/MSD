@@ -46,11 +46,11 @@ gripper_near_motor = False
 # TEST DATA
 # Sample Data: Used to simulate data extracted by machine vision#####
 # "B" for battery, "E" for Electronics
-typeposi_data = np.array([
-    ["B", "E", "B", "E"],  # Waste Type
-    [1.5, 4, 1, 9],  # X-Coordinates of waste (in cm, relative to origin)
-    [5, 7, 2, 8]  # Y-Coordinates of waste (in cm, relative to origin)
-])
+# typeposi_data = np.array([
+    # ["B", "E", "B", "E"],  # Waste Type
+    # [1.5, 4, 1, 9],  # X-Coordinates of waste (in cm, relative to origin)
+    # [5, 7, 2, 8]  # Y-Coordinates of waste (in cm, relative to origin)
+#])
 # Assume the gripper position is updated each time it a) homes, each time it reaches the b) encoders and
 # each time it c) goes towards a waste
 gripper_posi = [4, 1]  # Position of the gripper [X,Y] (in cm, relative to origin)
@@ -106,12 +106,13 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
             waste_sz = float(typeposi_data[2][col_index])
 
     # For Verification
-    print("current_shortest= ", current_shortest)
-    print("X_short_dif_posi= ", x_short_dif_posi)
-    print("Y_short_dif_posi= ", y_short_dif_posi)
-    print("coor_chosen_waste= ", coor_chosen_waste)
+    #print("current_shortest= ", current_shortest)
+    #print("X_short_dif_posi= ", x_short_dif_posi)
+    #print("Y_short_dif_posi= ", y_short_dif_posi)
+    #print("coor_chosen_waste= ", coor_chosen_waste)
 
-    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
+    #return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
+    
     return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi), waste_sz
 
 
@@ -403,7 +404,7 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 # Positive direction will y invert  true heads towards home
 # 178mm for 2000 1/4 microstep
 # y_drv8825_step.blink(background = False,  n= 800, on_time =0.001, off_time = 0.0004)
-#testdir = cmToMotorSteps(0.45, 17.8, 10, 0)
+#testdir = cmToMotorSteps(0.45, 17.8*4, 0, 1)
 #Tuned direction
 #drivedrv8825(0, 1, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=testdir, invert_xDir=False, invert_yDir=False)  # Steps
 # given that the direction is not inverted
@@ -414,6 +415,10 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 #drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
 
 #SimuHomeXY()
+
+
+#getshortestdist([0,0], typeposi_data, 20)
+
 
 print("XYMovement Module: Done")
 #sleep(1000)
