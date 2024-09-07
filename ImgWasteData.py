@@ -1,11 +1,15 @@
 from ultralytics import YOLO
 import numpy as np
 import cv2
+from time import sleep
+
 
 def TakePicture():
     # Attach camera object
-    webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-
+    webcamera = cv2.VideoCapture(0)
+    sleep(2)
+    brightness_value = 170  # Adjust this value as needed
+    webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
     # Take a picture
     success, captured_img = webcamera.read()
 
@@ -14,9 +18,9 @@ def TakePicture():
 def GetMVData(frame):
     #Function takes image input and outputs type_posi array for segregation section
 
-    # Define the range for the color green in HSV space
-    lower_green = np.array([40, 40, 40])
-    upper_green = np.array([80, 255, 255])
+    # Define the range for the color blue in HSV space
+    lower_green = np.array([100, 125, 130])
+    upper_green = np.array([120, 138, 150])
 
     # Convert the origin image to HSV color space
     hsv_origin = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -26,7 +30,7 @@ def GetMVData(frame):
 
     # Find contours in the binary mask
     contours, _ = cv2.findContours(mask_origin, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+    origin_image_coords=(0, 0)
     if contours:
         # Assume the largest contour is the green rectangle
         contour = max(contours, key=cv2.contourArea)
@@ -35,7 +39,7 @@ def GetMVData(frame):
         x, y, w, h = cv2.boundingRect(contour)
 
         # Calculate the lower left corner of the rectangle
-        origin_image_coords = (x, y + h)
+        origin_image_coords = (x, y)
 
 
         # Draw the rectangle and the origin point for visualization (optional)
@@ -106,14 +110,21 @@ def GetMVData(frame):
         print("y2", x_y[3])
         print("\n")
 
+        
+
+        
+        
         # Calculate centre coordinates relative to image origin
         center_x = int((x1 + x2) / 2)
         center_y = int((y1 + y2) / 2)
-
+        
+        # Draw the center point on the object bounding boxes
+        cv2.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
+        
         # Calculate new centre coordinates relative to platform origin
         object_new_coords = (
-            center_x - origin_image_coords[0],
-            origin_image_coords[1] - center_y
+            -(center_x-origin_image_coords[0]),
+            center_y - origin_image_coords[1]
         )
 
         # Calculate the detected box area
@@ -133,6 +144,7 @@ def GetMVData(frame):
     type_posi = np.vstack((waste_symbol, cen_x, cen_y, box_area))
 
     print("The resulting type_posi array")
+    print(origin_image_coords)
     print(type_posi)
 
     return type_posi
@@ -146,3 +158,5 @@ def GetMVData(frame):
 #[Box Area]
     
 #print(GetMVData(TakePicture()))
+
+GetMVData(TakePicture())
