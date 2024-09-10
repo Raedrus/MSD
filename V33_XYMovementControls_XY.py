@@ -77,6 +77,9 @@ def irencstest():
 # Dustbin Core Functions######################################################
 # SHORTEST DISTANCE IN STEPS
 def getshortestdist(gripper_posi, typeposi_data, distperpix):
+    
+    
+    
     # DistPerPix assumed to be in cm
     arr_dimensions = typeposi_data.shape    # Assign the same matrix form
     typeposi_rows, typeposi_cols = arr_dimensions
@@ -146,6 +149,14 @@ def SimuHomeXY():
     print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
     
 def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif_posi):
+    
+    print(f"\nMoving X by {round(x_short_dif_posi)} cm")
+    print(f"\nMoving X by {round(y_short_dif_posi)} cm")
+    
+    #Offset to adjust for gripper origin
+    y_offset = 1100
+    x_offset = 1300
+    
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
     # those into number of steps for the motor, returned in a tupple [X steps, Y steps]
@@ -162,7 +173,7 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
     print("Y_StepsToTravel= ", y_stepstotravel)
     # Compensation happens here if motors are of different step size
     # Example: if x stepper uses 1/4 steps while y stepper uses half steps, y_stepstotravel needs to divide 2 to match.
-    return [x_stepstotravel, y_stepstotravel]
+    return [x_stepstotravel - x_offset, y_stepstotravel - y_offset]
 # STEPPER MOTOR: COREXY
 def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, tobin=None, list_XYSteps=None,
                  list_DirXY=None, invert_xDir=False, invert_yDir=False, x_offset=0, y_offset=0):
