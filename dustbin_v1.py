@@ -28,7 +28,7 @@ ThisSystem = psutil.Process(current_system_pid)
 ##TESTING PLAT STABILIZER
 from gpiozero import AngularServo
 pin_plat_servo = 27
-plat_servo=AngularServo(27, min_pulse_width=0.0005, max_pulse_width=0.0025)
+plat_servo=AngularServo(pin_plat_servo, min_pulse_width=0.0005, max_pulse_width=0.0025)
 
 #Initialize at home position
 plat_servo.angle = 0
@@ -50,6 +50,8 @@ pin_Xhome = 11
 pin_Yhome = 9
 pin_Zhome = 25
 pin_binpresence = 19
+
+
 
 # Infrared Sensor
 pin_Platorigin = 22
@@ -79,6 +81,8 @@ ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
 start_button = Button(pin_start, pull_up=True)
 Estop_button = Button(pin_Estop, pull_up=True)
 
+binpresence = Button(pin_binpresence, pull_up = False)
+
 # Limit switch and IR sensor Assignment
 
 
@@ -100,7 +104,7 @@ def start_loop():
     # Ensure electromagnets are off
     esp32_comms(ser, "EMAGNET_OFF")
 
-    if pin_binpresence.is_pressed == False:
+    if binpresence.is_pressed == False:
         esp32_comms(ser, "GLED_OFF")
         esp32_comms(ser, "RLED_ON")
 
@@ -110,13 +114,14 @@ def start_loop():
 
         try:
             while True:
+                print("Checking for humans")
                 humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
                 # second parameter specifies timeout value before it autosorts
 
         except KeyboardInterrupt:
             print("Keyboard Interrupt!")
         except:
-            pass
+            print("An unexpected error has occured")
         finally:
             # Used to turn off the LEDs for the prototype while testing
             esp32_comms(ser, "GLED_OFF")
@@ -168,13 +173,13 @@ def humanPres(detect_range, lid_timeout):
 
 def MetalBinTilt():
 
-    plat_servo.angle = 30
+    plat_servo.angle = 20
     sleep(1)
     plat_servo.angle = 0
     plat_servo.angle= None
     
 def GenBinTilt():
-    plat_servo.angle = -30
+    plat_servo.angle = -20
     sleep(1)
     plat_servo.angle = 0
     plat_servo.angle= None
@@ -211,10 +216,12 @@ def SortingCycle():
     return
 
 
-    #Remove lines below?
-    if __name__ == "__main__":
-        start_loop()
-        return
+
+
+#Remove lines below?
+#if __name__ == "__main__":
+       # start_loop()
+        #return
 
 
 
