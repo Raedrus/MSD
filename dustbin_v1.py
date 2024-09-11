@@ -23,6 +23,19 @@ import Gripper_Segregation as GS
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
 
+
+#Platform Servo
+##TESTING PLAT STABILIZER
+from gpiozero import AngularServo
+pin_plat_servo = 27
+plat_servo=AngularServo(27, min_pulse_width=0.0005, max_pulse_width=0.0025)
+
+#Initialize at home position
+plat_servo.angle = 0
+plat_servo.angle= None
+
+
+
 ################## GPIO Assignments################################################################
 # Ultrasonic Sensor
 pin_ult_echo = 26
@@ -152,6 +165,19 @@ def humanPres(detect_range, lid_timeout):
         esp32_comms(ser, "LID_CLOSE")
         sleep(0.4)
 
+
+def MetalBinTilt():
+
+    plat_servo.angle = 30
+    sleep(1)
+    plat_servo.angle = 0
+    plat_servo.angle= None
+    
+def GenBinTilt():
+    plat_servo.angle = -30
+    sleep(1)
+    plat_servo.angle = 0
+    plat_servo.angle= None
 
 def SortingCycle():
     # Gate Sequence
