@@ -1,3 +1,19 @@
+import time
+import serial
+
+print("Serial_Pi_ESP32: Module Read")
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
+
+
+def esp32_done():
+    while True:
+        ser.flush()
+        response = ser.readline().decode('utf-8').strip()
+        if response == "Done":
+            ser.reset_input_buffer()
+            break
+
+
 def esp32_comms(ser, commandESP):
     # Encode string with a separation at the end
     commandESP = f"{commandESP}\n".encode('utf-8')
@@ -28,11 +44,11 @@ def esp32_comms(ser, commandESP):
 
         # Resend command after 5 seconds for 1 time
         if time_diff == 5 and resend_counter < 1:
-            ESP32_Comms(ser, commandESP)
+            esp32_comms(ser, commandESP)
             resend_counter += 1
-        else:
-            # Shutdown system as ESP32 is not responding
-            system_shutdown()
+    # else:
+    # Shutdown system as ESP32 is not responding
+    # system_shutdown()
 
     # Clear lingering serial inputs
     ser.reset_input_buffer()
@@ -53,3 +69,6 @@ def esp32_comms(ser, commandESP):
             # Clear lingering serial inputs
             ser.reset_input_buffer()
             return
+
+
+print("Serial_Pi_ESP32: Module Done")

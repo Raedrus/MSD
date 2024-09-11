@@ -16,12 +16,24 @@ import os  # For testing system quits
 import psutil  # For testing system quits
 
 # Function file import
-#from WasteSorting import sortingcycle
+# from WasteSorting import sortingcycle
 from Serial_Pi_ESP32 import esp32_comms
+from Serial_Pi_ESP32 import esp32_done
 import Gripper_Segregation as GS
 
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
+
+# Platform Servo
+##TESTING PLAT STABILIZER
+from gpiozero import AngularServo
+
+pin_plat_servo = 27
+plat_servo = AngularServo(pin_plat_servo, min_pulse_width=0.0005, max_pulse_width=0.0025)
+
+# Initialize at home position
+plat_servo.angle = 0
+plat_servo.angle = None
 
 ################## GPIO Assignments################################################################
 # Ultrasonic Sensor
@@ -66,6 +78,8 @@ ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
 start_button = Button(pin_start, pull_up=True)
 Estop_button = Button(pin_Estop, pull_up=True)
 
+binpresence = Button(pin_binpresence, pull_up=False)
+
 # Limit switch and IR sensor Assignment
 
 
@@ -84,49 +98,45 @@ webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 
 def start_loop():
+    esp32_comms(ser, "LID_OPEN")
+    esp32_done()
     # Ensure electromagnets are off
-    esp32_comms(ser, "EMAGNET_OFF")
+    esp32_comms(ser, "EMAG_OFF")
+    esp32_done()
+    esp32_comms(ser, "LID_CLOSE")
+    esp32_done()
 
-    if pin_binpresence.is_pressed == False:
-        esp32_comms(ser, "GLED_OFF")
-        esp32_comms(ser, "RLED_ON")
+    while True:
+        if binpresence.is_pressed == True:
+            print("Bin Absence Warning")
+            esp32_comms(ser, "GLED_OFF")
+            esp32_done()
+            esp32_comms(ser, "RLED_ON")
 
-    else:
-        esp32_comms(ser, "GLED_ON")
-        esp32_comms(ser, "RLED_OFF")
+        else:
 
-        try:
+            esp32_comms(ser, "GLED_ON")
+            esp32_comms(ser, "RLED_OFF")
+
+            print("Checking for humans")
             while True:
                 humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
                 # second parameter specifies timeout value before it autosorts
 
-        except KeyboardInterrupt:
-            print("Keyboard Interrupt!")
-        except:
-            pass
-        finally:
-            # Used to turn off the LEDs for the prototype while testing
-            esp32_comms(ser, "GLED_OFF")
-            esp32_comms(ser, "RLED_OFF")
-
-            sys.exit()
-
 
 def humanPres(detect_range, lid_timeout):
-
-
-    PrintUltSenseDist()  # For debugging use
-
     ult_distance = float(ult_sensor.distance)
+
+    print("Utrasonic Dist: ", ult_distance)
 
     if ult_distance < float(detect_range):
         t0 = time.time()
 
         # open the lid
         esp32_comms(ser, "LID_OPEN")
-        sleep(1)
-        esp32_comms(ser, "EMAGNET_ON")
-        sleep(1)
+        esp32_done()
+        esp32_comms(ser, "EMAG_ON")
+        esp32_done()
 
         while True:
 
@@ -148,9 +158,25 @@ def humanPres(detect_range, lid_timeout):
                 break
 
     elif ult_distance > detect_range:
+        pass
+
         # Close the lid
-        esp32_comms(ser, "LID_CLOSE")
-        sleep(0.4)
+        # esp32_comms(ser, "LID_CLOSE")
+        # sleep(0.4)
+
+
+def MetalBinTilt():
+    plat_servo.angle = 20
+    sleep(1)
+    plat_servo.angle = 0
+    plat_servo.angle = None
+
+
+def GenBinTilt():
+    plat_servo.angle = -20
+    sleep(1)
+    plat_servo.angle = 0
+    plat_servo.angle = None
 
 
 def SortingCycle():
@@ -167,10 +193,8 @@ def SortingCycle():
 
     sleep(1)
 
-    #Platoform servo is connected to Pi Side
-    #First sortation cycle ends with GENERAL waste bring tilted to one platform
-    
-    
+    # Platoform servo is connected to Pi Side
+    # First sortation cycle ends with GENERAL waste bring tilted to one platform
 
     esp32_comms(ser, "GATE_OPEN")
     sleep(5)
@@ -178,20 +202,19 @@ def SortingCycle():
 
     GS.main()
 
-    
-    #Platoform servo is connected to Pi Side
-    #First sortation cycle ends with METAL waste bring tilted to the other platform
-    
+    # Platoform servo is connected to Pi Side
+    # First sortation cycle ends with METAL waste bring tilted to the other platform
+
     return
 
 
-    #Remove lines below?
-    if __name__ == "__main__":
-        start_loop()
-        return
+# Remove lines below?
+# if __name__ == "__main__":
+# start_loop()
+# return
 
 
+# The main program
 
 
-#The main program
 start_loop()

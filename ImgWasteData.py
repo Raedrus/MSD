@@ -7,9 +7,10 @@ from time import sleep
 def TakePicture():
     # Attach camera object
     webcamera = cv2.VideoCapture(0)
-    sleep(2)
+
     brightness_value = 170  # Adjust this value as needed
     webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
+    sleep(2)
     # Take a picture
     success, captured_img = webcamera.read()
 
