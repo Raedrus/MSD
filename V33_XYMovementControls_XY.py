@@ -154,8 +154,8 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
     print(f"\nMoving X by {round(y_short_dif_posi)} cm")
     
     #Offset to adjust for gripper origin
-    y_offset = 1100
-    x_offset = 1300
+    y_offset = 1290
+    x_offset = 1680
     
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
