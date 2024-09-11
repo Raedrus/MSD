@@ -359,7 +359,7 @@ def GripperToWaste():
 
 	gan.drivedrv8825(0, dirXY, "Full","XY",0.001,list_DirXY=dirXY,list_XYSteps=xy_steps_toDesti,invert_xDir=False,invert_yDir=True)
 
-
+	return waste_sz
 
 ##########################################################################################
 
@@ -378,27 +378,7 @@ def main():
 
     while len(type_posi[0]) > 0:
         
-        ###Gripper computes nearest waste
-        # The output below is the coordinates of the nearest waste
-        # [x, y] in terms of steps
-        xy_steps_toDesti, waste_sz = gan.getshortestdist(gripper_posi, type_posi, 20) #Last parameter is distance per pixel value
-        
-        
-        
-        # Obtaining turning directions
-        dirX = int(xy_steps_toDesti[0]) >= 0
-        dirY = int(xy_steps_toDesti[1]) >= 0
-        dirXY = [dirX, dirY]
-        ###
-
-        # Move the gripper to the nearest waste
-        gan.drivedrv8825(0, dirY, "Full",
-                         "XY",
-                         0.001,
-                         list_DirXY=dirXY,
-                         list_XYSteps=xy_steps_toDesti,
-                         invert_xDir=True,
-                         invert_yDir=True)
+        waste_sz = GripperToWaste()
         
         #DECIDE ON A GRIPPING METHOD
         #Use the vacuum pump on small items
