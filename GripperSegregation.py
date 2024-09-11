@@ -2,11 +2,7 @@
 # Object detection --> obtain number of objects and coordinates --> gripper sorting until no items remain
 
 ##TESTING PLAT STABILIZER
-from gpiozero import AngularServo
-pin_plat_servo = 27
-plat_servo=AngularServo(27, min_pulse_width=0.0005, max_pulse_width=0.0025)
-plat_servo.angle = 0
-plat_servo.angle= None
+
 
 #################
 
@@ -170,8 +166,8 @@ def ToBinB(waste_sz):
 
     xDir = 0  # Placeholder values
     yDir = 0
-    xloc = 800  # Placeholder value
-    yloc = 800 #Placeholder value
+    xloc = 400  # Placeholder value
+    yloc = 0 #Placeholder value
     
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
@@ -246,8 +242,8 @@ def ToBinC(waste_sz):
 
     xDir = 0  # Placeholder values
     yDir = 0
-    xloc = 1200  # Placeholder value
-    yloc = 800 #Placeholder value
+    xloc = 2600  # Placeholder value
+    yloc = 0 #Placeholder value
     
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
@@ -317,7 +313,7 @@ def finger_release_drop():
     # open the gripper fingers
     esp32_comms(ser, "G_OPEN")
 
-    sleep(0.2)
+    sleep(3)
     # Elevate the gripper back upwards
     za.full_ele_gripper()
 
@@ -346,7 +342,7 @@ def GripperToWaste():
 	gan.SimuHomeXY()
 	type_posi = imgD.GetMVData(imgD.TakePicture())
 	ToCoordZero()
-	xy_steps_toDesti, waste_sz = gan.getshortestdist([0,0], type_posi, 30/250) #Last parameter is distance per pixel value
+	xy_steps_toDesti, waste_sz = gan.getshortestdist([0,0], type_posi, 30/270) #Last parameter is distance per pixel value
 	
 	# Obtaining turning directions
 	dirX = int(xy_steps_toDesti[0]) >= 0
@@ -389,6 +385,9 @@ def main():
         
         else:
             # Open the gripper fingers
+            
+            pd_steps = 5900
+            
             esp32_comms(ser, "G_OPEN")
             # Parameter specifies number of steps required for partial descent
             za.partial_lower_gripper(pd_steps)
@@ -410,8 +409,9 @@ def main():
         type_posi = imgD.GetMVData(imgD.TakePicture())
 
 
-#esp32_comms(ser, "G_CLOSE")
-
+#esp32_comms(ser, "LID_OPEN")
+#sleep(3)
+#esp32_comms(ser, "LID_CLOSE")
 
  
 #home_XY()
@@ -432,7 +432,16 @@ def main():
 
 
 #GripperToWaste()
+#za.full_ele_gripper()
+#ToBinB(50)
 
-ToBinB(50)
+
+
+#GripperToWaste()
+
+#za.partial_lower_gripper(5900)
+#za.full_lower_gripper()
+
+#esp32_comms(ser, "G_CLOSE")
 
 print("Grip Segregation Program Ended")
