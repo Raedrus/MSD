@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6fcc53f6-7516-4819-950e-12de5ef34b3c" name="Changes" comment="Update Commit">
+      <change beforePath="$PROJECT_DIR$/.idea/MSD.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MSD.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dustbin_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/dustbin_v1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
