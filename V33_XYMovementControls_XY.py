@@ -1,7 +1,7 @@
 # XY MOVEMENT CONTROLS
-# UPDATE 30/8
-# Simultaneous XY Update
-# Smart Encoder Update (Gantry movement direction is now dependent on whether it is infront of the encoder or behind it)
+#UPDATE 30/8
+#Simultaneous XY Update
+#Smart Encoder Update (Gantry movement direction is now dependent on whether it is infront of the encoder or behind it)
 # Summary: Processes information from machine vision, to move stepper motor accordingly
 from time import sleep
 from gpiozero import DigitalOutputDevice
@@ -10,6 +10,10 @@ from gpiozero import PWMOutputDevice
 from gpiozero import Button
 import numpy as np
 import math
+
+
+import serial
+from Serial_Pi_ESP32 import esp32_comms
 
 # Pin Assignments###############################################
 # IR Encoders for movement
@@ -39,7 +43,7 @@ x_drv8825_dir = DigitalOutputDevice(pin_x_drv8825_dir)
 # Setup Limit Switches
 y_homingswitch = Button(9, pull_up=False)
 x_homingswitch = Button(11, pull_up=False)
-# VARIABLE INITIALIZATION
+#VARIABLE INITIALIZATION
 
 global gripper_near_motor
 gripper_near_motor = False
@@ -48,10 +52,10 @@ gripper_near_motor = False
 # Sample Data: Used to simulate data extracted by machine vision#####
 # "B" for battery, "E" for Electronics
 # typeposi_data = np.array([
-# ["B", "E", "B", "E"],  # Waste Type
-# [1.5, 4, 1, 9],  # X-Coordinates of waste (in cm, relative to origin)
-# [5, 7, 2, 8]  # Y-Coordinates of waste (in cm, relative to origin)
-# ])
+    # ["B", "E", "B", "E"],  # Waste Type
+    # [1.5, 4, 1, 9],  # X-Coordinates of waste (in cm, relative to origin)
+    # [5, 7, 2, 8]  # Y-Coordinates of waste (in cm, relative to origin)
+#])
 # Assume the gripper position is updated each time it a) homes, each time it reaches the b) encoders and
 # each time it c) goes towards a waste
 gripper_posi = [4, 1]  # Position of the gripper [X,Y] (in cm, relative to origin)
@@ -60,8 +64,6 @@ coor_chosen_waste = [0, 0]
 # Initialize: Disable Motors
 y_drv8825_en.on()
 x_drv8825_en.on()
-
-
 # TEST FUNCTIONS
 def homingswitchestest():
     while True:
@@ -71,31 +73,30 @@ def homingswitchestest():
         elif x_homingswitch.is_pressed:
             print("X Limit Switch Triggered")
             sleep(0.25)
-
-
 def irencstest():
     while True:
         print("IR Encoder 1 reads:", ir_enc1.value)
         print("IR Encoder 2 reads:", ir_enc2.value)
         print("Note 0 for absence, 1 for presence of object blocking the sensor")
         sleep(1)
-
-
 # Dustbin Core Functions######################################################
 # SHORTEST DISTANCE IN STEPS
 def getshortestdist(gripper_posi, typeposi_data, distperpix):
+    
+    
+    
     # DistPerPix assumed to be in cm
-    arr_dimensions = typeposi_data.shape  # Assign the same matrix form
+    arr_dimensions = typeposi_data.shape    # Assign the same matrix form
     typeposi_rows, typeposi_cols = arr_dimensions
     current_shortest = float('inf')  # Initialization to a very large value #Needed for choosing shortest distance
     for col_index in range(typeposi_cols):
         print("Waste ", col_index + 1)  # Verify data extracted
-        waste_xposi = float(typeposi_data[1][col_index])  # Extract x-position of the waste
-        waste_yposi = float(typeposi_data[2][col_index])  # Extract y-position of the waste
+        waste_xposi = float(typeposi_data[1][col_index])    # Extract x-position of the waste
+        waste_yposi = float(typeposi_data[2][col_index])    # Extract y-position of the waste
         print(" waste_XPosi= ", waste_xposi, " waste_YPosi= ", waste_yposi)  # Print and Verify Data Extracted
         print("Gripper_Posi X= ", gripper_posi[0], " Gripper_Posi Y= ", gripper_posi[1])
-        dif_x = waste_xposi - float(gripper_posi[0])  # Calculate difference in x-distance between gripper and waste.
-        dif_y = waste_yposi - float(gripper_posi[1])  # Calculate difference in y-distance between gripper and waste.
+        dif_x = waste_xposi - float(gripper_posi[0])    # Calculate difference in x-distance between gripper and waste.
+        dif_y = waste_yposi - float(gripper_posi[1])    # Calculate difference in y-distance between gripper and waste.
         print("dif_X= ", dif_x)  # Print for verification
         print("dif_Y= ", dif_y)
         # Calculate the shortest diagonal distance from gripper to the waste
@@ -109,33 +110,37 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
             coor_chosen_waste[0] = waste_xposi  # Append the x-coordinates of the waste closest to gripper
             coor_chosen_waste[1] = waste_yposi  # Append the y-coordinates of the waste closest to gripper
 
-            # Memorize size of the nearest Waste
+            #Memorize size of the nearest Waste
             waste_sz = float(typeposi_data[2][col_index])
 
     # For Verification
-    # print("current_shortest= ", current_shortest)
-    # print("X_short_dif_posi= ", x_short_dif_posi)
-    # print("Y_short_dif_posi= ", y_short_dif_posi)
-    # print("coor_chosen_waste= ", coor_chosen_waste)
+    #print("current_shortest= ", current_shortest)
+    #print("X_short_dif_posi= ", x_short_dif_posi)
+    #print("Y_short_dif_posi= ", y_short_dif_posi)
+    #print("coor_chosen_waste= ", coor_chosen_waste)
 
-    # return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
-
-    return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi), waste_sz
+    #return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
+    
+    
+    #TUNING VALUE: 17.8*4
+    return cmToMotorSteps(0.45, 17.8*4, x_short_dif_posi, y_short_dif_posi), waste_sz
 
 
 def SimuHomeXY():
     time_delay = 0.001
-
+    
+    
+    
     x_drv8825_en.off()  # Turn on motor
     x_drv8825_dir.off()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
     y_drv8825_en.off()  # Turn on motor
     y_drv8825_dir.on()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
     while x_homingswitch.is_pressed == True or y_homingswitch.is_pressed == True:
-
+        
         if x_homingswitch.is_pressed == True:
             x_drv8825_step.blink(background=False, n=abs(3), on_time=time_delay, off_time=time_delay)
             print("Stepping motor: X")
-
+        
         if y_homingswitch.is_pressed == True:
             y_drv8825_step.blink(background=False, n=abs(3), on_time=time_delay, off_time=time_delay)
             y_drv8825_step.off()
@@ -147,9 +152,16 @@ def SimuHomeXY():
     y_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
     gripper_near_motor = True
     print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
-
-
+    
 def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif_posi):
+    
+    print(f"\nMoving X by {round(x_short_dif_posi)} cm")
+    print(f"\nMoving X by {round(y_short_dif_posi)} cm")
+    
+    #Offset to adjust for gripper origin
+    y_offset = 1290
+    x_offset = 1680
+    
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
     # those into number of steps for the motor, returned in a tupple [X steps, Y steps]
@@ -160,15 +172,13 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
                            3) / steps_per_rev  # Approximate distance traveled by gantry each motor step
     x_short_dif_posi = x_short_dif_posi * 10  # UNIT CONVERSION: cm to mm
     y_short_dif_posi = y_short_dif_posi * 10  # UNIT CONVERSION: cm to mm
-    x_stepstotravel = int(x_short_dif_posi / mm_distperstep)  # Calculate steps to travel in x-axis
-    y_stepstotravel = int(y_short_dif_posi / mm_distperstep)  # Calculate steps to travel in y-axis
+    x_stepstotravel = int(x_short_dif_posi / mm_distperstep)    # Calculate steps to travel in x-axis
+    y_stepstotravel = int(y_short_dif_posi / mm_distperstep)    # Calculate steps to travel in y-axis
     print("X_StepsToTravel= ", x_stepstotravel)
     print("Y_StepsToTravel= ", y_stepstotravel)
     # Compensation happens here if motors are of different step size
     # Example: if x stepper uses 1/4 steps while y stepper uses half steps, y_stepstotravel needs to divide 2 to match.
-    return [x_stepstotravel, y_stepstotravel]
-
-
+    return [x_stepstotravel - x_offset, y_stepstotravel - y_offset]
 # STEPPER MOTOR: COREXY
 def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, tobin=None, list_XYSteps=None,
                  list_DirXY=None, invert_xDir=False, invert_yDir=False, x_offset=0, y_offset=0):
@@ -277,7 +287,7 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
     if homing == False and tobin == None:
         gripper_near_motor = False
         print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
-
+        
         if selected_xy == "X":
             x_drv8825_step.blink(background=False, n=abs(steps - x_offset), on_time=time_delay, off_time=time_delay)
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
@@ -328,10 +338,10 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
             gripper_near_motor = True
             print(F"NOTE: gripper_near_motor = {gripper_near_motor}")
-
+            
             y_drv8825_en.value = 1  # Disable the motor, may reduce holding torque but reduce power dissipation
         print("Homing for ", selected_xy, " complete")
-
+        
         if selected_xy == "X":
             gripper_posi[0] = 0  # gripper x position
         elif selected_xy == "Y":
@@ -340,22 +350,24 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         print("Gripper position updated [Homing]= ", gripper_posi)
     elif homing == False and tobin == 0:  # CHANGE ToBin == 1 Incase direction is wrong
         gripper_near_motor = False
-
+        
         y_drv8825_en.off()  # Enable the motor
-
+        
         print(F"ENCODER DIRECTION DECISION: gripper_near_motor = {gripper_near_motor}")
         print("ENC SMART DIRECTIONS")
-        if gripper_near_motor == False:  # SMART DIRECTION SETTINGS
-            y_drv8825_dir.off()
+        if gripper_near_motor == False: #SMART DIRECTION SETTINGS
+                y_drv8825_dir.off()
         elif gripper_near_motor == True:
-            y_drv8825_dir.on()
-
+                y_drv8825_dir.on()
+        
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
-        while ir_enc1.value == False:  # Platform Origin Enc
-
+        while ir_enc1.value == False: #Platform Origin Enc
+            
+                
             y_drv8825_step.blink(background=False, n=20, on_time=time_delay, off_time=time_delay + 0.0003)
             print("Stepping motor Indefinitely Platform Origin")
-
+            
+            
         # Update the Y position
         gripper_posi[1] = ENC1_COOR  # gripper y position
         print("\n")
@@ -363,7 +375,7 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         y_drv8825_en.on()  # Turn the motor off
     elif homing == False and tobin == 1:  # CHANGE ToBin == 0 Incase direction is wrong
         gripper_near_motor = False
-
+        
         y_drv8825_en.off()  # Enable the motor
         y_drv8825_dir.value = 0  # Set motor direction
         # SIMILAR TO LIMIT SWITCH, THERE IS AN OPPORTUNITY TO WRITE A SAFER ALGORITHM FOR THIS SECTION
@@ -373,14 +385,12 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
         # Update the Y position
         gripper_posi[1] = ENC2_COOR  # gripper y position
         y_drv8825_en.on()  # Turn the motor off
-
-
 # IMPLEMENTATION##############################################################
 # homingswitchestest()
 # irencstest()
 # Produce data to for the stepper motor to move
 # xsteps_toDesti, ysteps_toDesti = getshortestdist(gripper_posi, typeposi_data,
-# 20)  # The steps needed in x direction to reach destination
+                                                 # 20)  # The steps needed in x direction to reach destination
 # xy_steps_toDesti = [xsteps_toDesti, ysteps_toDesti]  # For use in simultaneous movement
 # print("\n\n")
 # print("Xsteps_toDesti= ", xsteps_toDesti)  # For verification
@@ -402,32 +412,32 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 # drivedrv8825(200, dirY, "Full", "Y", 0.001) #A full rotation with Y
 # drivedrv8825(200, dirY, "Full", "X", 0.001) #A full rotation with X
 # drivedrv8825(200, dirY, "Half", "Y", 0.001) #A full rotation under half step
-# drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing = True) #HOMING THE X axis
-# drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)  # HOMING THE Y axis
+#drivedrv8825(ysteps_toDesti, dirY, "Full", "X", 0.0004, homing = True) #HOMING THE X axis
+#drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, homing=True)  # HOMING THE Y axis
 # drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, tobin = 0) #Move the Y-axis towards one encoder
 # drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004, tobin = 1) #Move the Y-axis towards the other encoder
 # drivedrv8825(0, dirY, "Full", "XY", 0.0004, list_DirXY = dirXY, list_XYSteps = xy_steps_toDesti) #Move the Y-axis towards the other encoder
-# drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=[0, 2000], invert_xDir=True,
-# invert_yDir=False)  # Direction inversion
+#drivedrv8825(0, dirY, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=[0, 2000], invert_xDir=True,
+             #invert_yDir=False)  # Direction inversion
 # Positive direction will y invert  true heads towards home
 # 178mm for 2000 1/4 microstep
 # y_drv8825_step.blink(background = False,  n= 800, on_time =0.001, off_time = 0.0004)
-# testdir = cmToMotorSteps(0.45, 17.8*4, 0, 1)
-# Tuned direction
-# drivedrv8825(0, 1, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=testdir, invert_xDir=False, invert_yDir=False)  # Steps
+#testdir = cmToMotorSteps(0.45, 17.8*4, 0, 1)
+#Tuned direction
+#drivedrv8825(0, 1, "Full", "XY", 0.001, list_DirXY=[0, 0], list_XYSteps=testdir, invert_xDir=False, invert_yDir=False)  # Steps
 # given that the direction is not inverted
 # x gantry + to the left if standing on motor side
 # y gantry + away from motor side
-# SimuHomeXY()
+#SimuHomeXY()
 
-# drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
+#drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
 
-# SimuHomeXY()
+#SimuHomeXY()
 
 
-# getshortestdist([0,0], typeposi_data, 20)
+#getshortestdist([0,0], typeposi_data, 20)
 
 
 print("XYMovement Module: Done")
-# sleep(1000)
+#sleep(1000)
 
