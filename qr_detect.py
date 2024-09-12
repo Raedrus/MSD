@@ -2,6 +2,8 @@ import cv2
 
 # Initialize camera
 cap = cv2.VideoCapture(0)  # Replace with your camera index
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Set width
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Set height
 
 # Create QR code detector
 detector = cv2.QRCodeDetector()
@@ -13,6 +15,8 @@ while True:
     if not ret:
         print("Failed to capture image")
         continue  # If no frame is captured, skip and try again
+
+
 
     # Detect and decode QR code
     data, points, _ = detector.detectAndDecode(frame)
