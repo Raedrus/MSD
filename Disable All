@@ -1,0 +1,42 @@
+
+#Disable 3 Motors, 1 electromagnet
+from time import sleep
+import serial
+from gpiozero import DigitalOutputDevice
+from Serial_Pi_ESP32 import esp32_done
+from Serial_Pi_ESP32 import esp32_comms
+
+
+ser = serial.Serial(
+    port='/dev/ttyAMA0',  # Replace with your serial port
+    baudrate=115200,
+    timeout=1
+)
+
+
+#######################################################################a
+
+pin_z_drv8825_en = 25
+z_drv8825_relax = DigitalOutputDevice(pin_z_drv8825_en)
+
+z_drv8825_relax.on()
+
+
+
+pin_y_drv8825_en = 18
+pin_x_drv8825_en = 12
+
+y_drv8825_en = DigitalOutputDevice(pin_y_drv8825_en)
+x_drv8825_en = DigitalOutputDevice(pin_x_drv8825_en)
+
+x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
+y_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
+
+
+
+esp32_comms(ser, "EMAG_ON")
+esp32_done()
+
+print("done")
+
+sleep(1200)
