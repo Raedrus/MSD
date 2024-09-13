@@ -6,12 +6,12 @@ from time import sleep
 
 def TakePicture():
     # Attach camera object
-    webcamera = cv2.VideoCapture(0)
+    webcamera = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
-    brightness_value = 170  # Adjust this value as needed
-    webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
-    webcamera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Set width
-    webcamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Set height
+    # brightness_value = 170  # Adjust this value as needed
+    # webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
+    # webcamera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Set width
+    # webcamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Set height
     # sleep(2)
 
 
@@ -30,59 +30,70 @@ def TakePicture():
 
 def GetMVData(frame):
     # Function takes image input and outputs type_posi array for segregation section
-    # Create QR code detector
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Apply Gaussian blur to reduce noise
-    blurred_frame = cv2.GaussianBlur(gray_frame, (3, 3), 0)
-
-    # # Apply adaptive histogram equalization (CLAHE) for contrast improvement
-    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    # enhanced_frame = clahe.apply(blurred_frame)
-    #
-    #
-    # # Optionally, use adaptive thresholding to further improve visibility
-    # adaptive_thresh = cv2.adaptiveThreshold(
-    #     enhanced_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 10
-    # )
-
-    detector = cv2.QRCodeDetector()
-
+    origin_xy= [0, 0]
     origin_detected = False  # Flag to track if origin is detected
+    while not origin_detected:
+        frame=TakePicture()
+        # Create QR code detector
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # #
+        # # Apply Gaussian blur to reduce noise
+        # blurred_frame = cv2.GaussianBlur(gray_frame, (7, 7), 0)
 
-    # Detect and decode QR code
-    data, points, _ = detector.detectAndDecode(blurred_frame)
+        # Apply adaptive histogram equalization (CLAHE) for contrast improvement
+        clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(8, 8))
+        enhanced_frame = clahe.apply(gray_frame)
+        # #
 
-    if points is not None and data and not origin_detected:
-        # QR code detected, proceed with processing
+        # #
+        # Optionally, use adaptive thresholding to further improve visibility
+        enhanced_frame = cv2.adaptiveThreshold(
+            enhanced_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 23, 4
+        )
 
-        # Convert points to integer format
-        points = points[0].astype(int)  # Convert the float points to integers
+        sharpen_kernel = np.array([[-1, -1, -1],
+                                   [-1, 9, -1],
+                                   [-1, -1, -1]])
+        enhanced_frame = cv2.filter2D(enhanced_frame, -1, sharpen_kernel)
 
-        # Draw the polygon around the QR code
-        for i in range(len(points)):
-            cv2.line(blurred_frame, tuple(points[i]), tuple(points[(i + 1) % len(points)]), (0, 255, 0), 2)
-
-        # Calculate the center of the QR code (origin)
-        up_left_corner= points[0]
-        origin_x = up_left_corner[0]
-        origin_y = up_left_corner[1]
+        detector = cv2.QRCodeDetector()
 
 
-        # Mark the origin on the frame
-        cv2.circle(blurred_frame, (origin_x, origin_y), 5, (255, 0, 0), -1)
 
-        print(f"QR Code detected: {data}")
-        print(f"Origin at: ({origin_x}, {origin_y})")
 
-        origin_detected = True  # Set the flag to True once origin is detected
+        # Detect and decode QR code
+        data, points, _ = detector.detectAndDecode(enhanced_frame)
+
+        if points is not None and data:
+            # QR code detected, proceed with processing
+
+            # Convert points to integer format
+            points = points[0].astype(int)  # Convert the float points to integers
+
+            # Draw the polygon around the QR code
+            for i in range(len(points)):
+                cv2.line(enhanced_frame, tuple(points[i]), tuple(points[(i + 1) % len(points)]), (0, 255, 0), 2)
+
+            # Calculate the center of the QR code (origin)
+            up_left_corner  = points[0]
+            origin_x = up_left_corner[0]
+            origin_y = up_left_corner[1]
+            origin_xy[0]=origin_x
+            origin_xy[1]=origin_y
+            # Mark the origin on the frame
+            cv2.circle(frame, (origin_x, origin_y), 5, (0, 255, 0), -1)
+
+            print(f"QR Code detected: {data}")
+            print(f"Origin at: ({origin_x}, {origin_y})")
+
+            origin_detected = True  # Set the flag to True once origin is detected
 
     # Show the frame with the marked origin, whether detected or not
     if origin_detected:
         # Display the frame with the detected QR code and marked origin
-        cv2.putText(blurred_frame, f"Origin: ({origin_x}, {origin_y})", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(enhanced_frame, f"Origin: ({origin_x}, {origin_y})", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
-    cv2.imshow("QR Code Detection", blurred_frame)
+    cv2.imshow("QR Code Detection", frame)
 
     model = YOLO('best.pt')
     print(model.names)
@@ -174,7 +185,7 @@ def GetMVData(frame):
     type_posi = np.vstack((waste_symbol, cen_x, cen_y, box_area))
 
     print("The resulting type_posi array")
-    print(origin_x,origin_y)
+    print(origin_xy)
     print(type_posi)
     while True:
         if cv2.waitKey(1) & 0xFF == ord('q'):

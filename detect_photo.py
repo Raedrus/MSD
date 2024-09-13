@@ -6,11 +6,11 @@ import time
 model = YOLO('best.pt')
 print(model.names)
 webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-# webcamera.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-# webcamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+webcamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+webcamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
 
 # Set the brightness value (brightness range is typically from 0.0 to 1.0)
-brightness_value = 155  # Adjust this value as needed
+brightness_value = 120  # Adjust this value as needed
 webcamera.set(cv2.CAP_PROP_BRIGHTNESS, brightness_value)
 
 # only if needed
@@ -56,7 +56,7 @@ if contours:
     distperpix = round(300/w, 3)
 
     # Draw the rectangle and the origin point for visualization (optional)
-    cv2.rectangle(origin_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    # cv2.rectangle(origin_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.circle(origin_image, origin_image_coords, 5, (255, 0, 0), -1)  # Mark the origin
 
     # Display the origin image with the marked origin (optional)
@@ -72,7 +72,7 @@ y_coordinates = []
 
 
 
-results = model.track(frame, classes=[0, 1, 2], conf=0.8, imgsz=640)
+results = model.track(frame, classes=[0, 1, 2], conf=0.75, imgsz=640)
 cv2.putText(frame, f"Total: {len(results[0].boxes)}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2,
             cv2.LINE_AA)
 for box in results[0].boxes:
