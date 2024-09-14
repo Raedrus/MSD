@@ -7,6 +7,10 @@
 #################
 
 
+import serial
+from Serial_Pi_ESP32 import esp32_comms
+from Serial_Pi_ESP32 import esp32_done
+
 import CONST  # constant values only, coordinates and such
 
 import ImgWasteData as imgD  # Image Data
@@ -33,12 +37,17 @@ gripper_posi = [0, 0]  # Current gripper coordinates in steps
 
 ####################################################
 
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
+
+
+
 def home_XY():
     # Home the axis at the start and at the very end
 
-    gan.SimuHomeXY()
+    gan.drivedrv8825(0, 0, "Full", "X", 0.0004, homing=True)
+    gan.drivedrv8825(0, 0, "Full", "Y", 0.0004, homing=True)
     
-    esp32_comms(ser, "G_OPEN")
+    #esp32_comms(ser, "G_OPEN")
 
 
 # The 4 bins (General waste, metal, electronics, batteries)
@@ -89,8 +98,9 @@ def ToBinA(waste_sz):
     # For now, based on box area (Not foolproof for standing items)
 
     xDir = 0  # Placeholder values
+    yDir = 0
     xloc = 800  # Placeholder value
-    yloc = 250 #Placeholder value
+    yloc = 1500 #Placeholder value
     
     # After moving to that location, xloc moves it above the correct bin
     # xDir has to be determined from checking the right way to turn the motor
@@ -107,7 +117,7 @@ def ToBinA(waste_sz):
                  "Full",
                  "XY",
                  0.001,
-                 list_DirXY=[xDir, 1],
+                 list_DirXY=[0, yDir],
                  list_XYSteps=[0, yloc],
                  invert_xDir=True,
                  invert_yDir=True)  # Direction inversion
@@ -126,12 +136,17 @@ def ToBinA(waste_sz):
 
     # Use a specific type of grip depending on size
 
-    if waste_sz <= CONST.SMALL_SIZE:
+    if waste_sz <= float(CONST.SMALL_SIZE):
         vacuum_release_drop()
+        sleep(0.5)
+        print("Vacuum Drop")
+        
+        
         sleep(1)
     else:
         finger_release_drop()
-        sleep(1)
+        sleep(0.5)
+        print("Finger Drop")
 
     # Move x back to it's limit switch to recalibrate
     gan.drivedrv8825(0, 1, "Full", "X", 0.0004, homing=True)
@@ -204,7 +219,7 @@ def ToBinB(waste_sz):
 
     # Use a specific type of grip depending on size
 
-    if waste_sz <= CONST.SMALL_SIZE:
+    if waste_sz <= float(CONST.SMALL_SIZE):
         vacuum_release_drop()
         sleep(1)
     else:
@@ -242,7 +257,7 @@ def ToBinC(waste_sz):
 
     xDir = 0  # Placeholder values
     yDir = 0
-    xloc = 2600  # Placeholder value
+    xloc = 2200  # Placeholder value
     yloc = 0 #Placeholder value
     
     # After moving to that location, xloc moves it above the correct bin
@@ -280,7 +295,7 @@ def ToBinC(waste_sz):
 
     # Use a specific type of grip depending on size
 
-    if waste_sz <= CONST.SMALL_SIZE:
+    if float(waste_sz) <= float(CONST.SMALL_SIZE):
         vacuum_release_drop()
         sleep(1)
     else:
@@ -313,7 +328,7 @@ def finger_release_drop():
     # open the gripper fingers
     esp32_comms(ser, "G_OPEN")
 
-    sleep(3)
+    sleep(2)
     # Elevate the gripper back upwards
     za.full_ele_gripper()
 
@@ -329,25 +344,40 @@ def vacuum_release_drop():
 
     sleep(1)
     
-    # open the gripper fingers
-    esp32_comms(ser, "G_OPEN")
+    # OFF the vacuum pump
+    esp32_comms(ser, "VAC_OFF")
 
     sleep(0.2)
     # Elevate the gripper back upwards
     za.full_ele_gripper()
 
-
-
-def GripperToWaste():
-	gan.SimuHomeXY()
-	type_posi = imgD.GetMVData(imgD.TakePicture())
+def QRCapturePosition():
+	gan.drivedrv8825(825,
+                 1,
+                 "Full",
+                 "X",
+                 0.0004,
+                 )
+	gan.drivedrv8825(2140,
+                 0,
+                 "Full",
+                 "Y",
+                 0.0004,
+                 )
+                 
+def GripperToWaste(type_posi):
+	print("GS_waste")
+	home_XY()
 	ToCoordZero()
 	waste_sz = 0 #Setting default for value of no objects detected
 	
 	if len(type_posi[0]) > 0:
 		print("Detected Items: ",  len(type_posi[0]))
 		print(len(type_posi[0]))
-		xy_steps_toDesti, waste_sz = gan.getshortestdist([0,0], type_posi, 30/270) #Last parameter is distance per pixel value
+		
+
+		
+		xy_steps_toDesti, waste_sz = gan.getshortestdist([0,0], type_posi, 30/400) #Last parameter is distance per pixel value
 		
 	
 	else:
@@ -367,16 +397,27 @@ def GripperToWaste():
 		print("dirX: ", dirXY[0])
 		print("dirY: ", dirXY[1])
 		
+		
 		print("xy_steps_toDesti [x]: ", xy_steps_toDesti[0])
 		print("xy_steps_toDesti [y]: ", xy_steps_toDesti[1])
 		
+		
+		sleep(2)
 		#Check if coordinates are legal before moving
 		#proceed if equal
-		if ((dirY == True)) and (30 < abs(xy_steps_toDesti[0]) < 2700) and (abs(xy_steps_toDesti[1]) < 2400):
+		
+		x_bound =  3000
+		y_bound = 3000
+		
+		if (30 < abs(xy_steps_toDesti[0]) < x_bound) and (abs(xy_steps_toDesti[1]) < y_bound):
 			if dirX == False:
 				#For X gripping near the edge
 				xy_steps_toDesti[0] = 0
+				print("Bound X Adjusted")
 			
+			if dirY == False:
+				xy_steps_toDesti[1] = 0
+				print("Bound Y Adjusted")
 			# Move the gripper to the nearest waste
 			gan.drivedrv8825(0, dirXY, "Full","XY",0.001,list_DirXY=dirXY,list_XYSteps=xy_steps_toDesti,invert_xDir=False,invert_yDir=True)
 			
@@ -393,72 +434,103 @@ def GripperToWaste():
 
 def main():
     
+	print("main")
+	sleep(5)
     #Initialize the gripper
-    za.full_ele_gripper()
-    home_XY()
+	za.full_ele_gripper()
+	home_XY()
 
     # Detect the image, return the required position and item type data
     # and box area
 
-    ToCoordZero()
-    
-    grip_attempt = 0
-	
-	
-    while len(type_posi[0]) > 0:
-        
-        prev_detected = len(type_posi[0])
-        
-        waste_sz = GripperToWaste()
-        
-        
-        #DECIDE ON A GRIPPING METHOD
-        #Use the vacuum pump on small items
-        if waste_sz <= CONST.SMALL_SIZE:
-            pass  # Where the vacuum pump is supposed to turn off
-            za.full_lower_gripper()   
-            esp32_comms(ser, "VAC_ON")
-        
-        else:
-            # Open the gripper fingers
-            
-            pd_steps = 5900 #Calibrated
-            
-            esp32_comms(ser, "G_OPEN")
-            # Parameter specifies number of steps required for partial descent
-            za.partial_lower_gripper(pd_steps)
-            # close fingers
-            esp32_comms(ser, "G_CLOSE")
+	ToCoordZero()
 
-            za.full_ele_gripper()
-        
-        grip_attempt += 1
-        
-        match type_posi[0]:
-            # Providing size of the waste as input parameter
-            case "B":
-                ToBinA(type_posi[3])
-            case "E":
-                ToBinB(type_posi[3])
-            case "M":
-                ToBinC(type_posi[3])
+	grip_attempt = 0
+	
+	ToCoordZero()
+	QRCapturePosition()
+	origin_xy=imgD.GetPlatOrigin()
+	sleep(1)
+	home_XY()
+	type_posi = imgD.GetMVData(imgD.TakePicture(), origin_xy)
+	
+	
+	print(len(type_posi))
+	while len(type_posi[0]) > 0:
+		
+		prev_detected = len(type_posi[0])
+		
+		print("Gripper to waste")
+		waste_sz = GripperToWaste(type_posi)
+		
+		
+		#DECIDE ON A GRIPPING METHOD
+		#Use the vacuum pump on small items
+		if waste_sz <= float(CONST.SMALL_SIZE):
+			print("BALLOON GRIPPING")
+			
+			# Where the vacuum pump is supposed to turn off
+			sleep(0.4)
+			esp32_comms(ser, "VAC_OFF")
+			#esp32_done()
+			za.full_lower_gripper() 
+			sleep(0.4)
+			esp32_comms(ser, "VAC_ON")
+			
+			sleep(1.2)
+			za.full_ele_gripper()
+			
+		
+		else:
+			# Open the gripper fingers
+			
+			print("FINGER GRIPPING")
+			
+			pd_steps = 5900 #Calibrated
+			
+			esp32_comms(ser, "G_OPEN")
+			# Parameter specifies number of steps required for partial descent
+			za.partial_lower_gripper(pd_steps)
+			# close fingers
+			esp32_comms(ser, "G_CLOSE")
+			
+			sleep(1.2)
+			za.full_ele_gripper()
+		
+		grip_attempt += 1
+		
+		match type_posi[0]:
+			# Providing size of the waste as input parameter
+			case "B":
+				ToBinA(float(type_posi[3]))
+			case "E":
+				ToBinB(float(type_posi[3]))
+			case "M":
+				ToBinC(float(type_posi[3]))
 
 
 		
 
-        #Restart the process, the dustbin takes another look at what is left behind
-        
-        print("The number of attempted grip(s): ", grip_attempt)
-        
-        type_posi = imgD.GetMVData(imgD.TakePicture())
-        next_detected = len(type_posi[0])
-        
+		#Restart the process, the dustbin takes another look at what is left behind
+		
+		print("The number of attempted grip(s): ", grip_attempt)
+		
+		home_XY()
+		ToCoordZero()
+		QRCapturePosition()
+		origin_xy=imgD.GetPlatOrigin()
+		sleep(1)
+		home_XY()
+		type_posi = imgD.GetMVData(imgD.TakePicture(), origin_xy)
+		
+		next_detected = len(type_posi[0])
+		
         #if next_detected < prev_detected:
 			#print("Decrement detected")
         #IOT INSERTS HERE
 		#CONDITION: If the number of detected waste has decremented, there has been a successful grip
 		
-
+#esp32_comms(ser, "EMAG_OFF")
 
 #esp32_comms(ser, "LID_OPEN")
 #sleep(3)
@@ -474,7 +546,10 @@ def main():
 #finger_release_drop()
 #vacuum_release_drop()
 
-#main()
+main()
+#ToBinC(50)
+
+#ToBinB(50)
 
 #home_XY()
 
@@ -482,13 +557,13 @@ def main():
 
 
 
-GripperToWaste()
+#GripperToWaste(type_posi)
 #za.full_ele_gripper()
 #ToBinB(50)
 
 
 
-#GripperToWaste()
+#GripperToWaste(type_posi)
 
 #za.partial_lower_gripper(5900)
 #za.full_lower_gripper()
