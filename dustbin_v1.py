@@ -99,7 +99,7 @@ ser.reset_input_buffer()
 print("Serial OK")
 
 # initiate webcam
-webcamera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+webcamera = cv2.VideoCapture(0)
 
 ###############################
 def shut_system():
@@ -152,29 +152,37 @@ def LED_indicators(GLED, RLED, GBlink = False, RBlink = False):
     
 
 def start_loop():
+    sleep(0.3)
     esp32_comms(ser, "LID_OPEN")
     esp32_done()
     # Ensure electromagnets are off
+    sleep(0.3)
     esp32_comms(ser, "EMAG_OFF")
     esp32_done()
+    sleep(0.3)
     esp32_comms(ser, "LID_CLOSE")
     esp32_done()
+    sleep(0.3)
+    esp32_comms(ser, "GATE_CLOSE")
+    #esp32_done()
     
-
+    print("INITIALIZED")
 
     while True:
-        if binpresence.is_pressed == True:
+        if binpresence.is_pressed == False:
             print("Bin Absence Warning")
+            sleep(0.2)
             LED_indicators(0, 1)
 
         else:
-            
+            sleep(0.2)
             LED_indicators(1, 0)
                         
             print("Checking for humans")
             while True:
                 humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
                 # second parameter specifies timeout value before it autosorts
+                sleep(0.2)
 
 
 
@@ -193,8 +201,11 @@ def humanPres(detect_range, lid_timeout):
         t0 = time.time()
 
         # open the lid
+        sleep(0.3)
         esp32_comms(ser, "LID_OPEN")
+        esp32_done()
         esp32_comms(ser, "EMAG_ON")
+        esp32_done()
         LED_indicators(1, 0, GBlink = True)
 
         while True:
@@ -210,10 +221,12 @@ def humanPres(detect_range, lid_timeout):
                 break
 
             if t1 - t0 > lid_timeout:
-                print("Timeout, attempt to start the process")
-                print("Timeout: The sorting cycle begins")  # For Debugging
-                SortingCycle()
+                #print("Timeout, attempt to start the process")
+                #print("Timeout: The sorting cycle begins")  # For Debugging
+                #SortingCycle()
                 # Reset the timer
+                sleep(0.3)
+                esp32_comms(ser, "LID_CLOSE")
                 break
 
     elif ult_distance > detect_range:
@@ -244,12 +257,14 @@ def GenBinTilt():
 def SortingCycle():
     # Gate Sequence
     esp32_comms(ser, "LID_CLOSE")
+    esp32_done()
     sleep(0.5)
     esp32_comms(ser, "GATE_OPEN")
-    sleep(4)
+    sleep(3)
     esp32_comms(ser, "GATE_CLOSE")
     sleep(2)
     esp32_comms(ser, "EMAGNET_OFF")
+
 
 
     #1st Sortation Cycle
@@ -267,6 +282,7 @@ def SortingCycle():
     
     
     #2nd Sortation Cycle
+    sleep(0.3)
     esp32_comms(ser, "GATE_OPEN")
     sleep(4)
     esp32_comms(ser, "GATE_CLOSE")
@@ -292,7 +308,7 @@ def SortingCycle():
 #The main program
 
 
-
+#GS.GripperToWaste()
 
 
 
