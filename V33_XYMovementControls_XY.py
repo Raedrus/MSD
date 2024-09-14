@@ -38,11 +38,14 @@ y_drv8825_en = DigitalOutputDevice(pin_y_drv8825_en)
 y_drv8825_step = PWMOutputDevice(pin_y_drv8825_step, frequency=6000)
 y_drv8825_dir = DigitalOutputDevice(pin_y_drv8825_dir)
 x_drv8825_en = DigitalOutputDevice(pin_x_drv8825_en)
-x_drv8825_step = PWMOutputDevice(pin_x_drv8825_step, frequency=10000)
+x_drv8825_step = PWMOutputDevice(pin_x_drv8825_step, frequency=6000)
 x_drv8825_dir = DigitalOutputDevice(pin_x_drv8825_dir)
 # Setup Limit Switches
 y_homingswitch = Button(9, pull_up=False)
 x_homingswitch = Button(11, pull_up=False)
+# Initialize: Disable Motors
+y_drv8825_en.on()
+x_drv8825_en.on()
 #VARIABLE INITIALIZATION
 
 global gripper_near_motor
@@ -61,9 +64,7 @@ gripper_near_motor = False
 gripper_posi = [4, 1]  # Position of the gripper [X,Y] (in cm, relative to origin)
 # Use comment to disable sample data when actual smart dustbin is used
 coor_chosen_waste = [0, 0]
-# Initialize: Disable Motors
-y_drv8825_en.on()
-x_drv8825_en.on()
+
 # TEST FUNCTIONS
 def homingswitchestest():
     while True:
@@ -120,7 +121,7 @@ def getshortestdist(gripper_posi, typeposi_data, distperpix):
     #print("coor_chosen_waste= ", coor_chosen_waste)
 
     #return cmToMotorSteps(0.45, 22.41, x_short_dif_posi, y_short_dif_posi)
-    
+    print(x_short_dif_posi, y_short_dif_posi)
     
     #TUNING VALUE: 17.8*4
     return cmToMotorSteps(0.45, 17.8*4, x_short_dif_posi, y_short_dif_posi), waste_sz
@@ -159,8 +160,8 @@ def cmToMotorSteps(step_angle, gt2_pulleydiameter, x_short_dif_posi, y_short_dif
     print(f"\nMoving X by {round(y_short_dif_posi)} cm")
     
     #Offset to adjust for gripper origin
-    y_offset = 1290
-    x_offset = 1680
+    y_offset = 500  
+    x_offset = 500
     
     # Takes in stepper motor parameters, diameter of the pulley and difference
     # of distance between one position to a another in and x and y, translates
@@ -323,7 +324,7 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
             x_drv8825_en.off()  # Turn on motor
             x_drv8825_dir.off()  # ADJUST TO TURN IN DIRECTION WHICH HOME LIMIT SWITCH IS LOCATED
             while x_homingswitch.is_pressed == True:
-                x_drv8825_step.blink(background=False, n=abs(2), on_time=time_delay, off_time=time_delay)
+                x_drv8825_step.blink(background=False, n=abs(3), on_time=time_delay, off_time=time_delay)
                 print("Stepping motor: X")
             sleep(1)  # A brief pause before disabling the motor, so that inertia is accounted for
             x_drv8825_en.on()  # Disable the motor, may reduce holding torque but reduce power dissipation
@@ -405,7 +406,9 @@ def drivedrv8825(steps, dir, microstep, selected_xy, time_delay, homing=False, t
 # print("xy_steps_toDesti = ", xy_steps_toDesti)
 # print("dirXY = ", dirXY)
 # NOTE: The direction can be inverted with not dirY for example
-# drivedrv8825(xsteps_toDesti, dirX, "Full", "X", 0.0004)
+
+#drivedrv8825(800, 1, "Full", "X", 0.0004)
+
 # drivedrv8825(ysteps_toDesti, dirY, "Full", "Y", 0.0004) #(Number of steps, direction, physical microstep settings (wired), which motor, time delay between steps)
 # drivedrv8825(2000, dirY, "Full", "X", 0.0004) #(Number of steps, direction, physical microstep settings (wired), which motor, time delay between steps)
 # drivedrv8825(2000, dirY, "Full", "Y", 0.001) #Fixed steps but slower speed
