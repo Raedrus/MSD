@@ -20,6 +20,8 @@ import ZAxis as za
 #import serial
 #from Serial_Pi_ESP32 import esp32_comms
 
+from gpiozero import Button
+
 from time import sleep
 
 print("Gripper Segregation")
@@ -32,12 +34,15 @@ gripper_posi = [0, 0]  # Current gripper coordinates in steps
 # intentional
 
 # Class declarations#################################
-#ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
 
+G_limit_pin = 13
+
+G_limit_button = Button(G_limit_pin, pull_up=True)
 
 ####################################################
 
-ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=1)
+
 
 
 
@@ -70,6 +75,22 @@ def ToCoordZero():
     gripper_posi[0] = 0
     gripper_posi[1] = 0
 
+
+
+def Limited_G_Open():
+	if  G_limit_button.is_pressed == True:
+		sleep(0.3)
+		esp32_comms(ser, "G_OPEN")
+		
+		
+		while G_limit_button.is_pressed == True:
+			pass
+		
+		sleep(0.3)
+		esp32_comms(ser, "G_LIM")
+		
+		sleep(0.3)
+		#esp32_done()
 
 #Assumde bin positions:
 #That Bin ABC are only bins gripper drops to, and are near the Y limit switch
@@ -323,10 +344,10 @@ def finger_release_drop():
     # lower the z axis
     za.full_lower_gripper()
 
-    sleep(1)
+    sleep(0.5)
     
     # open the gripper fingers
-    esp32_comms(ser, "G_OPEN")
+    Limited_G_Open()
 
     sleep(2)
     # Elevate the gripper back upwards
@@ -438,6 +459,7 @@ def main():
 	sleep(5)
     #Initialize the gripper
 	za.full_ele_gripper()
+	Limited_G_Open()
 	home_XY()
 
     # Detect the image, return the required position and item type data
@@ -464,38 +486,30 @@ def main():
 		waste_sz = GripperToWaste(type_posi)
 		
 		
-		#DECIDE ON A GRIPPING METHOD
+		#DECIDE ON A GRIPPING METHOD [LEFT WITH GRIPPER ONLY]
 		#Use the vacuum pump on small items
-		if waste_sz <= float(CONST.SMALL_SIZE):
-			print("BALLOON GRIPPING")
-			
-			# Where the vacuum pump is supposed to turn off
-			sleep(0.4)
-			esp32_comms(ser, "VAC_OFF")
-			#esp32_done()
-			za.full_lower_gripper() 
-			sleep(0.4)
-			esp32_comms(ser, "VAC_ON")
-			
-			sleep(1.2)
-			za.full_ele_gripper()
+		
+		waste_sz = 10**23
+		
+
 			
 		
-		else:
-			# Open the gripper fingers
-			
-			print("FINGER GRIPPING")
-			
-			pd_steps = 5900 #Calibrated
-			
-			esp32_comms(ser, "G_OPEN")
-			# Parameter specifies number of steps required for partial descent
-			za.partial_lower_gripper(pd_steps)
-			# close fingers
-			esp32_comms(ser, "G_CLOSE")
-			
-			sleep(1.2)
-			za.full_ele_gripper()
+		# Open the gripper fingers
+		
+		print("FINGER GRIPPING")
+		
+		
+		Limited_G_Open()
+
+		za.full_lower_gripper()
+		
+		# close fingers
+		sleep(0.3)
+		esp32_comms(ser, "G_CLOSE")
+		esp32_done()
+		
+		sleep(0.3)
+		za.full_ele_gripper()
 		
 		grip_attempt += 1
 		
@@ -516,11 +530,7 @@ def main():
 		print("The number of attempted grip(s): ", grip_attempt)
 		
 		home_XY()
-		ToCoordZero()
-		QRCapturePosition()
-		origin_xy=imgD.GetPlatOrigin()
-		sleep(1)
-		home_XY()
+		sleep(0.3)
 		type_posi = imgD.GetMVData(imgD.TakePicture(), origin_xy)
 		
 		next_detected = len(type_posi[0])
@@ -569,5 +579,7 @@ main()
 #za.full_lower_gripper()
 
 #esp32_comms(ser, "G_CLOSE")
+#esp32_comms(ser, "G_CLOSE")
+#Limited_G_Open()
 
 print("Grip Segregation Program Ended")
