@@ -9,13 +9,35 @@ from gpiozero import Button
 from gpiozero import Servo
 from gpiozero import DigitalOutputDevice
 
+
 import serial
 
 import sys  # For testing system quits
 import os  # For testing system quits
 import psutil  # For testing system quits
 
+# for testing wifi
+import platform
+def is_wifi_connected():
+    if platform.system() == "Windows":
+        response = os.system("ping -n 1 google.com")
+    else:
+        response = os.system("ping -c 1 google.com")
+    return response == 0
+
+if is_wifi_connected():
+    print("Wi-Fi is connected.")
+else:
+    print("Wi-Fi is not connected.")
+    
 # Function file import
+#For IoT purpose and local storage
+import blynk as IoTB
+import api_google as google
+import local_save 
+from local_save import waste_counts
+
+
 #from WasteSorting import sortingcycle
 from Serial_Pi_ESP32 import esp32_comms
 from Serial_Pi_ESP32 import esp32_done
@@ -23,7 +45,6 @@ import Gripper_Segregation as GS
 
 current_system_pid = os.getpid()
 ThisSystem = psutil.Process(current_system_pid)
-
 
 #Platform Servo
 ##TESTING PLAT STABILIZER
@@ -34,6 +55,15 @@ plat_servo=AngularServo(pin_plat_servo, min_pulse_width=0.0005, max_pulse_width=
 #Initialize at home position
 plat_servo.angle = 0
 plat_servo.angle= None
+plat_servo.angle = 10
+print("10")
+time.sleep(4)
+plat_servo.angle = 20
+print("20")
+time.sleep(4)
+#plat_servo.angle = None
+while True:    
+    print("Hi")
 
 
 
@@ -80,7 +110,7 @@ ult_sensor = DistanceSensor(echo=pin_ult_echo, trigger=pin_ult_trigger)
 # Button Assignment
 # In the prototype, the buttons are set to pull up
 start_button = Button(pin_start, pull_up=True)
-Estop_button = Button(pin_Estop, pull_up=True)
+# Estop_button = Button(pin_Estop, pull_up=True)
 
 binpresence = Button(pin_binpresence, pull_up = False)
 
@@ -90,6 +120,7 @@ binpresence = Button(pin_binpresence, pull_up = False)
 # initiate arrays
 
 
+    
 
 
 # initiate serial handshake with ESP32 (TX,RX)
@@ -99,21 +130,21 @@ ser.reset_input_buffer()
 print("Serial OK")
 
 # initiate webcam
-webcamera = cv2.VideoCapture(0)
+#webcamera = cv2.VideoCapture(0)
 
 ###############################
 def shut_system():
     print("Emergency stop has been triggered, attempting system shutdown...")
     
     #Change LED indications
-    
+    LED_indicators(1, 1)
     
     
     sys.exit()
 
 # initiate interrupt for E-stop
 
-Estop_button.when_pressed = shut_system
+#Estop_button.when_pressed = shut_system
 ################################################
 
 def LED_indicators(GLED, RLED, GBlink = False, RBlink = False):
@@ -152,37 +183,54 @@ def LED_indicators(GLED, RLED, GBlink = False, RBlink = False):
     
 
 def start_loop():
-    sleep(0.3)
+    
     esp32_comms(ser, "LID_OPEN")
     esp32_done()
     # Ensure electromagnets are off
-    sleep(0.3)
+    
     esp32_comms(ser, "EMAG_OFF")
     esp32_done()
-    sleep(0.3)
+    
     esp32_comms(ser, "LID_CLOSE")
     esp32_done()
-    sleep(0.3)
+    
     esp32_comms(ser, "GATE_CLOSE")
-    #esp32_done()
+    esp32_done()
     
     print("INITIALIZED")
-
+    if is_wifi_connected():
+        wifi_flag=1
+        
     while True:
         if binpresence.is_pressed == False:
             print("Bin Absence Warning")
-            sleep(0.2)
-            LED_indicators(0, 1)
-
+            event = "Bin_Unavailable"
+            IoTB.writeIoT_Event(event)
+            #LED_indicators(0, 1)
+        
+        if wifi_flag:
+            print("Checking Blynk Reset...")
+            #######################################################################################################################################
+            ############# comment here when not necessary #############################################################################################
+            ##############################################################################################################################################
+            if IoTB.readIoT("V0") == 1:
+                print("Clearing rubbish quantity")
+                local_save.reset()
+                event = "Reset"
+                IoTB.writeIoT_Event(event)
+                google.API_update(waste_counts['e_device'], waste_counts['general_waste'], waste_counts['battery'], waste_counts['metal'], event)
+                
+                
+            
+            
         else:
-            sleep(0.2)
-            LED_indicators(1, 0)
+            #LED_indicators(1, 0)
                         
             print("Checking for humans")
-            while True:
-                humanPres(0.3, 5)  # Parameter specifies human detection range in meters,
-                # second parameter specifies timeout value before it autosorts
-                sleep(0.2)
+            
+            humanPres(0.3, 16)  # Parameter specifies human detection range in meters,
+                # second parameter specifies timeout value before it closes
+                
 
 
 
@@ -204,9 +252,10 @@ def humanPres(detect_range, lid_timeout):
         sleep(0.3)
         esp32_comms(ser, "LID_OPEN")
         esp32_done()
+        sleep(0.3)
         esp32_comms(ser, "EMAG_ON")
         esp32_done()
-        LED_indicators(1, 0, GBlink = True)
+        #LED_indicators(1, 0, GBlink = True)
 
         while True:
 
@@ -216,7 +265,8 @@ def humanPres(detect_range, lid_timeout):
 
                 print("ButtonTrig: The  sorting cycle begins")  # For Debugging
                 SortingCycle()
-
+                
+                
                 # Reset the timer
                 break
 
@@ -225,8 +275,10 @@ def humanPres(detect_range, lid_timeout):
                 #print("Timeout: The sorting cycle begins")  # For Debugging
                 #SortingCycle()
                 # Reset the timer
+                print("Timeout")
                 sleep(0.3)
                 esp32_comms(ser, "LID_CLOSE")
+                esp32_done()
                 break
 
     elif ult_distance > detect_range:
@@ -245,6 +297,9 @@ def MetalBinTilt():
     sleep(1)
     plat_servo.angle = 0
     plat_servo.angle= None
+    waste_counts['metal'] += 1
+    IoTB.writeIoT("v3",str(waste_counts['metal']))
+    local_save.update_values(waste_counts)
     
 def GenBinTilt():
     plat_servo.angle = -16
@@ -253,27 +308,35 @@ def GenBinTilt():
     sleep(1)
     plat_servo.angle = 0
     plat_servo.angle= None
+    waste_counts['general_waste'] += 1
+    IoTB.writeIoT("v4",str(waste_counts['general_waste']))
+    local_save.update_values(waste_counts)
 
 def SortingCycle():
     # Gate Sequence
     esp32_comms(ser, "LID_CLOSE")
     esp32_done()
-    sleep(0.5)
+    sleep(0.3)
     esp32_comms(ser, "GATE_OPEN")
-    sleep(3)
-    esp32_comms(ser, "GATE_CLOSE")
     sleep(2)
-    esp32_comms(ser, "EMAGNET_OFF")
+    esp32_done()
+    
+    esp32_comms(ser, "GATE_CLOSE")
+    sleep(0.3)
+    esp32_done()
+    esp32_comms(ser, "EMAG_OFF")
+    esp32_done()
 
 
 
     #1st Sortation Cycle
     LED_indicators(1, 0, RBlink = True)
     GS.main()
-    sleep(1)
+    sleep(0.5)
     
-    #First sortation cycle ends with GEN waste bring tilted to the other platform
+    #First sortation cycle ends with GEN waste being tilted to the other platform
     GenBinTilt()
+    
     
     
 
@@ -282,15 +345,19 @@ def SortingCycle():
     
     
     #2nd Sortation Cycle
-    sleep(0.3)
+    sleep(2.5)
     esp32_comms(ser, "GATE_OPEN")
-    sleep(4)
+    esp32_done()
+    sleep(1)
     esp32_comms(ser, "GATE_CLOSE")
+    esp32_done()
+    
     GS.main()
     
+    sleep(0.5)
     #Second
     MetalBinTilt()
-    
+    google.API_update(waste_counts['e_device'], waste_counts['general_waste'], waste_counts['battery'], waste_counts['metal'], "-")
     
     return
 
@@ -312,4 +379,4 @@ def SortingCycle():
 
 
 
-start_loop()
+#start_loop()
